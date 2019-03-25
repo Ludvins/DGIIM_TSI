@@ -15,7 +15,7 @@ import java.awt.Dimension;
 // para crear un jugador personalizado para el juego.
 
 public abstract class BaseAgent extends AbstractPlayer{
-    public static final int NUM_GEMS_FOR_EXIT = 10; // Número de gemas necesarias para poder pasar al siguiente nivel
+    public static final int NUM_GEMS_FOR_EXIT = 9; // Número de gemas necesarias para poder pasar al siguiente nivel
                                                    // Hay 23 gemas en total
     //Constructor. It must return in 1 second maximum.
     public BaseAgent(StateObservation so, ElapsedCpuTimer elapsedTimer){}
