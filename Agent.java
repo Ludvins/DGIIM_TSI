@@ -26,6 +26,7 @@ public class Agent extends BaseAgent {
     private PathFinder pf;
     private ArrayList<Node> path = new ArrayList<>();
     private PlayerObservation lastPosition;
+    private int local_gem_counter;
 
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
         super(so, elapsedTimer);
@@ -46,15 +47,21 @@ public class Agent extends BaseAgent {
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
 
-        System.out.println("Entra a ACT");
+        System.out.println("[ACT]: Posicion actual: " + getPlayer(stateObs).getX() + " " + getPlayer(stateObs).getY());
 
         Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
 
-        // TODO Mirar si esto sirve para algo, lo hizo antonio
+        if (getNumGems(stateObs) != local_gem_counter){
+            local_gem_counter+=1;
+            System.out.println("[ACT]: Gema conseguida.");
+            path.clear();
+        }
+
         // Get current position and clear path if needed
         PlayerObservation avatar = getPlayer(stateObs);
         if (((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY()))
                 && !path.isEmpty()) {
+            System.out.println("[ACT]: Entra en función 1.");
             path.remove(0);
         }
 
@@ -63,8 +70,7 @@ public class Agent extends BaseAgent {
 
         // Update path
         if (path.isEmpty()) {
-
-            System.out.println("El camino esta vacio");
+            System.out.println("[ACT]: El camino esta vacio");
             // Look for the exit (all gems collected)
             if (gems == NUM_GEMS_FOR_EXIT) {
 
@@ -73,64 +79,68 @@ public class Agent extends BaseAgent {
                 // Calculate shortest path to nearest exit
                 setAstarPath(avatar, exit);
             }
-
             // Look for another gem
             else {
-                System.out.println("El camino no esta vacio");
+                System.out.println("[ACT]: Buscamos la siguiente gema.");
                 // Select nearest gem
                 ArrayList<core.game.Observation>[] gemList
                         = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
                 Observation gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
-
+                System.out.println("[ACT]: Posicion de la siguiente gema: " + gem.getX() + ", " + gem.getY());
                 // Calculate shortest path to nearest exit
-                setAstarPath(avatar, gem);
+                if (!setAstarPath(avatar, gem)) {
+
+                    System.out.println("[ACT]: No existe camino a la siguiente gema.");
+
+                    if(action_implies_death(stateObs, Types.ACTIONS.ACTION_NIL)){
+                        System.out.println("[ACT]: La posicion actual no es segura.");
+
+                    }
+
+                }
+
             }
-        }
-        if (!stateObs.isAvatarAlive()){
-            System.out.println("Jugador muerto");
         }
         // Calculate next action
-        try {
-            Node nextPos = path.get(0);
-
-            // TODO Simular accion, si morimos buscar ruta de escape
-            action = computeNextAction(avatar, nextPos);
-
-            if (action_implies_death(stateObs, action)){
-                System.out.println(stateObs.isAvatarAlive());
-                //action = Types.ACTIONS.ACTION_RIGHT;
-                //System.out.println("La siguiente accion implica la muerte");
-                action = escape_from_current_position(stateObs);
-                path.clear();
-            }
-
-            lastPosition = avatar;
+        Node nextPos;
+        if (path != null && !path.isEmpty()) {
+            nextPos = path.get(0);
         }
-        catch(IndexOutOfBoundsException ex){
-            System.out.println("Path vacio");
+        else{
+            nextPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
+        }
+        action = computeNextAction(avatar, nextPos);
+
+        if (!isSafe(nextPos, stateObs) || action_implies_death(stateObs, action)){
+            System.out.println("[ACT]: La siguiente accion implica la muerte");
+            action = escape_from_current_position(stateObs);
+            path.clear();
         }
 
-        System.out.println(action);
+        lastPosition = avatar;
+
+        System.out.println("[ACT]: Acción a devolver: " + action);
         return action;
 
     }
 
+    // Comprueba si la posicion pasada es un muero o piedra.
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
 
 
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
-        System.out.println("[isSafe]: x: " + x + " y: " + y + " tipo: " + type );
+        System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
         return type != ObservationType.WALL && type != ObservationType.BOULDER;
     }
 
+    // Calcula una accion de escape.
     private Types.ACTIONS escape_from_current_position(StateObservation stateObs){
         int x = getPlayer(stateObs).getX();
         int y = getPlayer(stateObs).getY();
         Node actual = new Node(new Vector2d(x,y));
-        System.out.println(actual.position);
-        System.out.println("Buscando ruta de escape de posible muerte");
+        System.out.println("[Escape]: Buscando ruta de escape de posible muerte");
         ArrayList<Node> neighbours = new ArrayList<>();
 
         neighbours.add(new Node(actual.position.copy().add(1,0)));
@@ -138,16 +148,16 @@ public class Agent extends BaseAgent {
         neighbours.add(new Node(actual.position.copy().add(0,1)));
         neighbours.add(new Node(actual.position.copy().add(0,-1)));
 
-        System.out.println(neighbours.size());
         for (Node neighbour: neighbours) {
             if (isSafe(neighbour, stateObs)) {
                 return computeNextAction(getPlayer(stateObs), neighbour);
             }
         }
-        System.out.println("El jugador muere de todas formas");
+        System.out.println("[Escape]: El jugador muere de todas formas");
         return Types.ACTIONS.ACTION_NIL;
     }
 
+    // Comprueba si la accion correspondiente implica la muerte segun el juego.
     private boolean action_implies_death(StateObservation stateObs, Types.ACTIONS action){
         StateObservation next_state = stateObs.copy();
         next_state.advance(action);
@@ -161,9 +171,16 @@ public class Agent extends BaseAgent {
      * *********************************************
      */
 
-    private void setAstarPath(PlayerObservation initial, Observation goal){
-            path = pf.getPath(new Vector2d(initial.getX(), initial.getY()),
+    private boolean setAstarPath(PlayerObservation initial, Observation goal){
+        System.out.println("[setAstarPath]: Calculando camino.");
+        path = pf.getPath(new Vector2d(initial.getX(), initial.getY()),
                                   new Vector2d(goal.getX(), goal.getY()));
+        if (path == null) {
+            path = new ArrayList<Node>();
+            return false;
+        }
+        System.out.println("[setAstarPath]: Camino calculado de tamaño: " + path.size());
+            return true;
     }
 
     private Types.ACTIONS computeNextAction(PlayerObservation avatar, Node nextPos) {
