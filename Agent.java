@@ -92,6 +92,8 @@ public class Agent extends BaseAgent {
 
                     System.out.println("[ACT]: No existe camino a la siguiente gema.");
 
+                    //TODO: work here
+                    //Can't stop to think on an unsecure position
                     if(action_implies_death(stateObs, Types.ACTIONS.ACTION_NIL)){
                         System.out.println("[ACT]: La posicion actual no es segura.");
 
@@ -101,16 +103,24 @@ public class Agent extends BaseAgent {
 
             }
         }
+        
+        Node nowPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
         // Calculate next action
         Node nextPos;
         if (path != null && !path.isEmpty()) {
             nextPos = path.get(0);
         }
         else{
-            nextPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
+            nextPos = nowPos;
         }
         action = computeNextAction(avatar, nextPos);
 
+        if( boulderComing( nowPos,stateObs ))
+        {
+            System.out.println("[ACT]: Está una piedra para caernos");
+            return escape_from_current_position(stateObs);
+        }
+        
         if (!isSafe(nextPos, stateObs) || action_implies_death(stateObs, action)){
             System.out.println("[ACT]: La siguiente accion implica la muerte");
             action = escape_from_current_position(stateObs);
@@ -123,6 +133,24 @@ public class Agent extends BaseAgent {
         return action;
 
     }
+    
+    private boolean boulderComing(Node node, StateObservation stateObs){
+        int x = (int) node.position.x;
+        int y = (int) node.position.y;
+
+        //
+        if( y == 0 )
+        {
+            return true;
+        }
+        else
+        {
+        y = y-1;
+        ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
+        System.out.println("[isComing]: x: " + x + ", y: " + y + ", tipo: " + type );
+        return type == ObservationType.BOULDER;
+        }
+    }
 
     // Comprueba si la posicion pasada es un muero o piedra.
     private boolean isSafe(Node node, StateObservation stateObs){
@@ -130,9 +158,13 @@ public class Agent extends BaseAgent {
         int y = (int) node.position.y;
 
 
+        //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
+        ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();    
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
-        return type != ObservationType.WALL && type != ObservationType.BOULDER;
+        System.out.println("[isSafe]: x: " + x + ", y: " + (y-1) + ", tipo: " + uptype );
+        return type != ObservationType.WALL && type != ObservationType.BOULDER 
+                && uptype != ObservationType.BOULDER;
     }
 
     // Calcula una accion de escape.
