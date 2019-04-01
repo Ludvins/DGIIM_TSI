@@ -85,9 +85,6 @@ public class Agent extends BaseAgent {
                 ArrayList<core.game.Observation>[] gemList
                         = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
-                System.err.println("Lista Gemas");
-                System.err.println(gemList[0].stream());
-
                 next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
                 System.out.println("[ACT]: Posicion de la siguiente gema: " + next_gem.getX() + ", " + next_gem.getY());
                 // Calculate shortest path to nearest exit
@@ -171,6 +168,25 @@ public class Agent extends BaseAgent {
 
     //Making it a function only for debugging issues
 
+    private boolean areBoulberAbove(Node node, StateObservation stateObs){
+        int x = (int) node.position.x;
+        int y = (int) node.position.y;
+
+        return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
+    }
+
+    private ArrayList<Node> invariantGems(Node node, StateObservation stateObs){
+        ArrayList<core.game.Observation>[] gemList
+            = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+        ArrayList<Observation> gemInvariant = new ArrayList<Observation>();
+        
+        for(int i = 0; i < gemList[0].size();  ++i)
+        {
+            Observation next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize()) ;
+            
+        }
+        
+    }
     private boolean areBoulberNearby(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
