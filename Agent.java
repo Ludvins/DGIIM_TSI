@@ -4,7 +4,8 @@ package practica_busqueda;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Stream;
-
+import java.awt.List;
+import static java.util.Arrays.*;
 // General game imports
 import core.game.StateObservation;
 import ontology.Types;
@@ -84,9 +85,7 @@ public class Agent extends BaseAgent {
                         = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
                 System.err.println("Lista Gemas");
-                //System.err.println(gemList[0].stream().filter(x -> new Observation(x, stateObs.getBlockSize())));
-                System.err.println(gemList.length);
-
+                System.err.println(gemList[0].stream());
 
                 Observation gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
                 System.out.println("[ACT]: Posicion de la siguiente gema: " + gem.getX() + ", " + gem.getY());
@@ -163,6 +162,28 @@ public class Agent extends BaseAgent {
 
     //Making it a function only for debugging issues
 
+    private boolean areBoulberNearby(Node node, StateObservation stateObs){
+        int x = (int) node.position.x;
+        int y = (int) node.position.y;
+        boolean result = true;
+        
+        int[] num = {-1,0,1};
+        for( int i : num )
+        {
+        ObservationType type1 = getObservationGrid(stateObs)[x+i][y].get(0).getType();
+        ObservationType type2 = getObservationGrid(stateObs)[x][y+i].get(0).getType();
+        
+        if( type1 == ObservationType.BOULDER)
+             if  (type2 == ObservationType.BOULDER ) 
+            {
+                result = false;
+            }
+        }
+        
+
+        return result;
+    }
+    
     private boolean boulderComing(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
