@@ -26,6 +26,7 @@ public class Agent extends BaseAgent {
     private ArrayList<Node> path = new ArrayList<>();
     private PlayerObservation lastPosition;
     private int local_gem_counter;
+    private Observation next_gem;
 
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
         super(so, elapsedTimer);
@@ -87,10 +88,10 @@ public class Agent extends BaseAgent {
                 System.err.println("Lista Gemas");
                 System.err.println(gemList[0].stream());
 
-                Observation gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
-                System.out.println("[ACT]: Posicion de la siguiente gema: " + gem.getX() + ", " + gem.getY());
+                next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
+                System.out.println("[ACT]: Posicion de la siguiente gema: " + next_gem.getX() + ", " + next_gem.getY());
                 // Calculate shortest path to nearest exit
-                if (!setAstarPath(avatar, gem)) {
+                if (!setAstarPath(avatar, next_gem)) {
 
                     System.out.println("[ACT]: No existe camino a la siguiente gema.");
 
@@ -133,6 +134,14 @@ public class Agent extends BaseAgent {
             nextPos = nowPos;
         }
         action = computeNextAction(avatar, nextPos);
+
+
+        if (nextPos.position.x == next_gem.getX() && nextPos.position.y == next_gem.getY()){
+            System.out.println("[ACT]: La siguiente posicion es una gema");
+            path.clear();
+            return action;
+        }
+
 
         //if( boulderComing( nowPos,stateObs ))
         //{
