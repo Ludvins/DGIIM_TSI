@@ -19,9 +19,6 @@ import javax.swing.plaf.nimbus.State;
  */
 public class Agent extends BaseAgent {
 
-    // Random agent
-    private Random randomGenerator;
-
     // Basic A* agent
     private PathFinder pf;
     private ArrayList<Node> path = new ArrayList<>();
@@ -49,7 +46,7 @@ public class Agent extends BaseAgent {
 
         System.out.println("[ACT]: Posicion actual: " + getPlayer(stateObs).getX() + " " + getPlayer(stateObs).getY());
 
-        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
+        Types.ACTIONS action;
 
         if (getNumGems(stateObs) != local_gem_counter){
             local_gem_counter+=1;
@@ -94,10 +91,27 @@ public class Agent extends BaseAgent {
 
                     //TODO: work here
                     //Can't stop to think on an unsecure position
-                    if(action_implies_death(stateObs, Types.ACTIONS.ACTION_NIL)){
-                        System.out.println("[ACT]: La posicion actual no es segura.");
+                    //if(action_implies_death(stateObs, Types.ACTIONS.ACTION_NIL)){
+                    //    System.out.println("[ACT]: La posicion actual no es segura.");
 
+                    //}
+
+
+                    pf.state = stateObs;
+                    pf.grid = stateObs.getObservationGrid();
+                    //pf.astar = new AStar(pf);
+                    if (pf.astar == null){
+                        System.out.println("Astar nulo");
                     }
+                    Node pos = new Node(new Vector2d(getPlayer(stateObs).getX(),  getPlayer(stateObs).getY()));
+                    System.out.println(pos.position);
+                    //Node g = new Node(new Vector2d(gem.getX(), gem.getY()));
+                    //System.out.println(g.position);
+                    //path = pf.astar._findPath(pos, g);
+                    //if (path == null || path.isEmpty()){
+                    //    System.out.println("No ha funcionado");
+                    //}
+                    pf.runAll((int) pos.position.x, (int) pos.position.y);
 
                 }
 
@@ -115,16 +129,23 @@ public class Agent extends BaseAgent {
         }
         action = computeNextAction(avatar, nextPos);
 
-        if( boulderComing( nowPos,stateObs ))
-        {
-            System.out.println("[ACT]: Está una piedra para caernos");
-            return escape_from_current_position(stateObs);
-        }
-        
-        if (!isSafe(nextPos, stateObs) || action_implies_death(stateObs, action)){
+        //if( boulderComing( nowPos,stateObs ))
+        //{
+        //    System.out.println("[ACT]: Está una piedra para caernos");
+         //   return escape_from_current_position(stateObs);
+       // }
+
+        if (action_implies_death(stateObs, action)){
             System.out.println("[ACT]: La siguiente accion implica la muerte");
-            action = escape_from_current_position(stateObs);
             path.clear();
+            action = escape_from_current_position(stateObs);
+        }
+
+        if (!isSafe(nextPos, stateObs)){
+            System.out.println("[ACT]: La siguiente posición no es segura");
+            path.clear();
+            action = escape_from_current_position(stateObs);
+
         }
 
         lastPosition = avatar;
@@ -152,7 +173,7 @@ public class Agent extends BaseAgent {
         }
     }
 
-    // Comprueba si la posicion pasada es un muero o piedra.
+    // Comprueba si la posicion es segura.
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
@@ -163,7 +184,7 @@ public class Agent extends BaseAgent {
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();    
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
         System.out.println("[isSafe]: x: " + x + ", y: " + (y-1) + ", tipo: " + uptype );
-        return type != ObservationType.WALL && type != ObservationType.BOULDER 
+        return type != ObservationType.WALL && type != ObservationType.BOULDER
                 && uptype != ObservationType.BOULDER;
     }
 

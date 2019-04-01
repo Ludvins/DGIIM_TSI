@@ -89,7 +89,7 @@ public class PathFinder {
         return astar.getPath(new Node(start), new Node(end));
     }
 
-    private void runAll(int i, int j) {
+    public void runAll(int i, int j) {
         Node start = new Node(new Vector2d(i,j));
         Node goal = null; //To get all routes.
 

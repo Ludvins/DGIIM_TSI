@@ -137,7 +137,7 @@ public class AStar
 
     }
 
-    private ArrayList<Node> _findPath(Node start, Node goal)
+    public ArrayList<Node> _findPath(Node start, Node goal)
     {
         Node node = null;
         openList = new PriorityQueue<Node>();
