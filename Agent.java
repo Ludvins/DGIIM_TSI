@@ -174,10 +174,10 @@ public class Agent extends BaseAgent {
         ObservationType type2 = getObservationGrid(stateObs)[x][y+i].get(0).getType();
         
         if( type1 == ObservationType.BOULDER)
-             if  (type2 == ObservationType.BOULDER ) 
-            {
                 result = false;
-            }
+        if(type2 == ObservationType.BOULDER ) 
+                result = false;
+            
         }
         
 
