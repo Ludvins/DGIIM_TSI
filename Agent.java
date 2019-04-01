@@ -3,6 +3,7 @@ package practica_busqueda;
 // General java imports
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.stream.Stream;
 
 // General game imports
 import core.game.StateObservation;
@@ -39,7 +40,6 @@ public class Agent extends BaseAgent {
         // Get last known position
         lastPosition = getPlayer(so);
     }
-
 
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
@@ -82,6 +82,12 @@ public class Agent extends BaseAgent {
                 // Select nearest gem
                 ArrayList<core.game.Observation>[] gemList
                         = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+
+                System.err.println("Lista Gemas");
+                //System.err.println(gemList[0].stream().filter(x -> new Observation(x, stateObs.getBlockSize())));
+                System.err.println(gemList.length);
+
+
                 Observation gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
                 System.out.println("[ACT]: Posicion de la siguiente gema: " + gem.getX() + ", " + gem.getY());
                 // Calculate shortest path to nearest exit
@@ -117,7 +123,7 @@ public class Agent extends BaseAgent {
 
             }
         }
-        
+
         Node nowPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
         // Calculate next action
         Node nextPos;
@@ -154,7 +160,9 @@ public class Agent extends BaseAgent {
         return action;
 
     }
-    
+
+    //Making it a function only for debugging issues
+
     private boolean boulderComing(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
@@ -181,7 +189,7 @@ public class Agent extends BaseAgent {
 
         //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
-        ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();    
+        ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
         System.out.println("[isSafe]: x: " + x + ", y: " + (y-1) + ", tipo: " + uptype );
         return type != ObservationType.WALL && type != ObservationType.BOULDER
