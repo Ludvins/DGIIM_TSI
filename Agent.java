@@ -175,7 +175,7 @@ public class Agent extends BaseAgent {
 
         return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
-    private boolean areBoulberAbove(int x, int y, StateObservation stateObs){
+    private boolean isBoulberAbove(int x, int y, StateObservation stateObs){
         return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
 
@@ -197,9 +197,7 @@ public class Agent extends BaseAgent {
         for( int i = 0; i < gemList.size(); ++i)
         {
             int h = 0;
-            if(
-                    areBoulderAbove(gem.get(i).getX(),gem.get(i).getY(),stateObs)
-                    )
+            if( isBoulderAbove(gem.get(i).getX(),gem.get(i).getY(),stateObs) )
             heuristicas.add(h);
         } 
         
