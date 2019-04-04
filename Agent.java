@@ -19,8 +19,9 @@ import javax.swing.plaf.nimbus.State;
  * Agent class
  * @author Luis Antonio Ortega Andrés
  */
-public class Agent extends BaseAgent {
 
+
+public class Agent extends BaseAgent {
     // Basic A* agent
     private PathFinder pf;
     private ArrayList<Node> path = new ArrayList<>();
@@ -175,16 +176,27 @@ public class Agent extends BaseAgent {
         return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
 
-    private ArrayList<Node> invariantGems(Node node, StateObservation stateObs){
-        ArrayList<core.game.Observation>[] gemList
-            = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
-        ArrayList<Observation> gemInvariant = new ArrayList<Observation>();
+    
+
+    private ArrayList<Node> Gems(Node node, StateObservation stateObs){
+        ArrayList<core.game.Observation> gemList
+            = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
         
-        for(int i = 0; i < gemList[0].size();  ++i)
+
+        ArrayList<Observation> gem = new ArrayList<Observation>();
+        
+        for( int i = 0; i < gemList.size(); ++i)
         {
-            Observation next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize()) ;
+            gem.add( new Observation(gemList.get(0), stateObs.getBlockSize()));
+        } 
+        
+        ArrayList<Integer> heuristicas = new ArrayList<Integer>();
+        for( int i = 0; i < gemList.size(); ++i)
+        {
+            heuristicas.add(0);
             
-        }
+        } 
+        
         
     }
     private boolean areBoulberNearby(Node node, StateObservation stateObs){
