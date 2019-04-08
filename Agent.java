@@ -2,6 +2,7 @@ package practica_busqueda;
 
 // General java imports
 import java.util.ArrayList;
+import java.util.; 
 import java.util.Random;
 import java.util.stream.Stream;
 import java.awt.List;
@@ -14,7 +15,7 @@ import tools.Vector2d;
 
 import javax.swing.*;
 import javax.swing.plaf.nimbus.State;
-
+import java.lang.*;
 /**
  * Agent class
  * @author Luis Antonio Ortega Andrés
@@ -175,11 +176,12 @@ public class Agent extends BaseAgent {
 
         return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
+
+        
     private boolean isBoulberAbove(int x, int y, StateObservation stateObs){
         return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
 
-    
 
     private ArrayList<Node> Gems(Node node, StateObservation stateObs){
         ArrayList<core.game.Observation> gemList
@@ -187,22 +189,53 @@ public class Agent extends BaseAgent {
         
 
         ArrayList<Observation> gem = new ArrayList<Observation>();
+        java.util.List<java.util.Map.Entry<Integer,Integer>> heuristicList = new java.util.ArrayList<>();
         
         for( int i = 0; i < gemList.size(); ++i)
         {
             gem.add( new Observation(gemList.get(i), stateObs.getBlockSize()));
         } 
         
-        ArrayList<Integer> heuristicas = new ArrayList<Integer>();
         for( int i = 0; i < gemList.size(); ++i)
         {
             int h = 0;
-            if( isBoulderAbove(gem.get(i).getX(),gem.get(i).getY(),stateObs) )
-            heuristicas.add(h);
+            //if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
+            // intente ponerlo en una función para que no fuera todo horrible y no lo conseguí
+            // sigo trabajando intentar que no sea feisimo
+            //De hecho la clave sería tener una funcion de heurisitcas, en general todo este 
+            // metodo se podría hacer en un único bucle buah voy a matar al inventor de java, enfin.
+            int x = gem.get(i).getX();
+            int y = gem.get(i).getY();
+            boolean boulderAbove = ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
+            if (boulderAbove)
+                h += 30;
+            
+            
+            //Calculate Manhattan Metric to each gem
+            Node nowPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
+            h += Math.abs( nowPos.position.x - x);
+            h += Math.abs( nowPos.position.y - y);
+            
+            
+            java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
+            heuristicList.add(pair1);
         } 
         
         
+        ArrayList<Observation> OrderedGem = new ArrayList<Observation>();
+
+        for( int i = 0; i < gemList.size(); ++i)
+        {
+            java.util.Map.Entry<Observation,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(gem.get(i),heuristicas.get(i));
+            pairList.add(pair1);
+        }
+        
+        
+        
+        
     }
+
+    
     private boolean areBoulberNearby(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
