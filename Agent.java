@@ -190,7 +190,8 @@ public class Agent extends BaseAgent {
 
         ArrayList<Observation> gem = new ArrayList<Observation>();
         java.util.List<java.util.Map.Entry<Integer,Integer>> heuristicList = new java.util.ArrayList<>();
-        
+        ArrayList<Node> OrderedGem = new ArrayList<Node>();
+    
         for( int i = 0; i < gemList.size(); ++i)
         {
             gem.add( new Observation(gemList.get(i), stateObs.getBlockSize()));
@@ -220,19 +221,21 @@ public class Agent extends BaseAgent {
             java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
             heuristicList.add(pair1);
         } 
-        
-        
-        ArrayList<Observation> OrderedGem = new ArrayList<Observation>();
 
-        for( int i = 0; i < gemList.size(); ++i)
+        //ordena en funcion de las heursiticas
+        heuristicList.sort( (p1,p2) -> p1.getValue().compareTo(p2.getValue()));
+        
+        for( java.util.Map.Entry<Integer,Integer> p : heuristicList )
         {
-            java.util.Map.Entry<Observation,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(gem.get(i),heuristicas.get(i));
-            pairList.add(pair1);
+            System.out.println("practica_busqueda.Agent.Gems()"+p.toString()+"\n");
+            int i = p.getKey();
+            int x = gem.get(i).getX();
+            int y = gem.get(i).getY();
+            
+            OrderedGem.add( new Node( new Vector2d(x,y)));
         }
         
-        
-        
-        
+        return OrderedGem;
     }
 
     
