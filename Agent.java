@@ -202,9 +202,6 @@ public class Agent extends BaseAgent {
             int h = 0;
             //if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
             // intente ponerlo en una función para que no fuera todo horrible y no lo conseguí
-            // sigo trabajando intentar que no sea feisimo
-            //De hecho la clave sería tener una funcion de heurisitcas, en general todo este 
-            // metodo se podría hacer en un único bucle buah voy a matar al inventor de java, enfin.
             int x = gem.get(i).getX();
             int y = gem.get(i).getY();
             boolean boulderAbove = ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
