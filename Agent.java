@@ -43,6 +43,8 @@ public class Agent extends BaseAgent {
 
         // Get last known position
         lastPosition = getPlayer(so);
+        
+        ArrayList<Observation> gemas_ordenadas_heuristicas = this.Gems( so );
     }
 
     @Override
@@ -88,6 +90,7 @@ public class Agent extends BaseAgent {
                         = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
                 next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
+                //next_gem = this.Gems(stateObs).get(0);
                 System.out.println("[ACT]: Posicion de la siguiente gema: " + next_gem.getX() + ", " + next_gem.getY());
                 // Calculate shortest path to nearest exit
                 if (!setAstarPath(avatar, next_gem)) {
@@ -183,14 +186,14 @@ public class Agent extends BaseAgent {
     }
 
 
-    private ArrayList<Node> Gems(Node node, StateObservation stateObs){
+    private ArrayList<Observation> Gems( StateObservation stateObs){
         ArrayList<core.game.Observation> gemList
             = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
         
 
         ArrayList<Observation> gem = new ArrayList<Observation>();
         java.util.List<java.util.Map.Entry<Integer,Integer>> heuristicList = new java.util.ArrayList<>();
-        ArrayList<Node> OrderedGem = new ArrayList<Node>();
+        ArrayList<Observation> OrderedGem = new ArrayList<>();
     
         for( int i = 0; i < gemList.size(); ++i)
         {
@@ -229,7 +232,8 @@ public class Agent extends BaseAgent {
             int x = gem.get(i).getX();
             int y = gem.get(i).getY();
             
-            OrderedGem.add( new Node( new Vector2d(x,y)));
+            //OrderedGem.add( new Node( new Vector2d(x,y)));
+            OrderedGem.add( gem.get(i) );
         }
         
         return OrderedGem;
