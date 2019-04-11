@@ -91,28 +91,24 @@ public class Agent extends BaseAgent {
                 System.out.println("[ACT]: Buscamos la siguiente gema.");
 
 
-
+                /**
+                En caso de querer coger la gema mas cercana utilizar este vector.
+                 **/
                 // Select nearest gem
                 //ArrayList<core.game.Observation>[] gemList
                 //        = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
+                /**
+                 * Coger la mejor gema segun la heuristica.
+                 */
                 next_gem = this.gems.get(0);
                 this.gems.remove(0);
 
-                //next_gem = this.Gems(stateObs).get(0);
                 System.out.println("[ACT]: Posicion de la siguiente gema: " + next_gem.getX() + ", " + next_gem.getY());
                 // Calculate shortest path to nearest exit
                 if (!setAstarPath(avatar, next_gem)) {
 
                     System.out.println("[ACT]: No existe camino a la siguiente gema.");
-
-                    //TODO: work here
-                    //Can't stop to think on an unsecure position
-                    //if(action_implies_death(stateObs, Types.ACTIONS.ACTION_NIL)){
-                    //    System.out.println("[ACT]: La posicion actual no es segura.");
-
-                    //}
-
 
                     pf.state = stateObs;
                     pf.grid = stateObs.getObservationGrid();
@@ -122,12 +118,7 @@ public class Agent extends BaseAgent {
                     }
                     Node pos = new Node(new Vector2d(getPlayer(stateObs).getX(),  getPlayer(stateObs).getY()));
                     System.out.println(pos.position);
-                    //Node g = new Node(new Vector2d(gem.getX(), gem.getY()));
-                    //System.out.println(g.position);
-                    //path = pf.astar._findPath(pos, g);
-                    //if (path == null || path.isEmpty()){
-                    //    System.out.println("No ha funcionado");
-                    //}
+
                     pf.runAll((int) pos.position.x, (int) pos.position.y);
 
                 }
@@ -153,13 +144,6 @@ public class Agent extends BaseAgent {
             return action;
         }
 
-
-        //if( boulderComing( nowPos,stateObs ))
-        //{
-        //    System.out.println("[ACT]: Está una piedra para caernos");
-         //   return escape_from_current_position(stateObs);
-       // }
-
         if (action_implies_death(stateObs, action)){
             System.out.println("[ACT]: La siguiente accion implica la muerte");
             path.clear();
@@ -180,20 +164,9 @@ public class Agent extends BaseAgent {
 
     }
 
-    //Making it a function only for debugging issues
-
-    private boolean isBoulderAbove(Node node, StateObservation stateObs){
-        int x = (int) node.position.x;
-        int y = (int) node.position.y;
-
-        return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
-    }
-
-        
-    private boolean isBoulderAbove(int x, int y, StateObservation stateObs){
-        return ObservationType.BOULDER == getObservationGrid(stateObs)[x][y-1].get(0).getType();
-    }
-
+    /*******************************************************
+     * Gem Listing Methods
+     *******************************************************/
 
     private ArrayList<Observation> Gems( StateObservation stateObs){
         ArrayList<core.game.Observation> gemList
@@ -242,7 +215,21 @@ public class Agent extends BaseAgent {
         return OrderedGem;
     }
 
-    
+    /*************************************************
+     * Boulder Nearby Methods
+     *************************************************/
+
+    private boolean isBoulderAbove(Node node, StateObservation stateObs){
+        int x = (int) node.position.x;
+        int y = (int) node.position.y;
+
+        return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
+    }
+
+
+    private boolean isBoulderAbove(int x, int y, StateObservation stateObs){
+        return ObservationType.BOULDER == getObservationGrid(stateObs)[x][y-1].get(0).getType();
+    }
     private boolean areBoulberNearby(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
@@ -282,6 +269,10 @@ public class Agent extends BaseAgent {
         return type == ObservationType.BOULDER;
         }
     }
+
+    /*************************************************
+     * Safety Methods
+     *************************************************/
 
     // Comprueba si la posicion es segura.
     private boolean isSafe(Node node, StateObservation stateObs){
@@ -330,7 +321,7 @@ public class Agent extends BaseAgent {
 
     /**
      * *********************************************
-     * Test act methods
+     * Path Methods
      * *********************************************
      */
 
