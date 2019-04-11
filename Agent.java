@@ -199,11 +199,12 @@ public class Agent extends BaseAgent {
         ArrayList<core.game.Observation> gemList
             = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
         
-
-        ArrayList<Observation> gem = new ArrayList<Observation>();
+        //Definicion de variables
+        ArrayList<Observation> gem = new ArrayList<>();
         java.util.List<java.util.Map.Entry<Integer,Integer>> heuristicList = new java.util.ArrayList<>();
         ArrayList<Observation> OrderedGem = new ArrayList<>();
     
+        // Creacion de vector de variables
         for( int i = 0; i < gemList.size(); ++i)
         {
             gem.add( new Observation(gemList.get(i), stateObs.getBlockSize()));
@@ -212,19 +213,21 @@ public class Agent extends BaseAgent {
         for( int i = 0; i < gemList.size(); ++i)
         {
             int h = 0;
-            if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) ){
-                h+=30;
-            }
+            if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
+            {   h+=30;   }
 
             int x = gem.get(i).getX();
             int y = gem.get(i).getY();
 
-            
-            //Calculate Manhattan Metric to each gem
-            Node nowPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
-            h += Math.abs( nowPos.position.x - x);
-            h += Math.abs( nowPos.position.y - y);
-            
+            if( null == pf.getPath(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()),
+                                  new Vector2d(x, y)) )
+            {  h+=10000;  
+               System.out.println("Gema en posición:("+x + ","+y+"), NO es accesible");
+            }
+            else
+            {
+                System.out.println("Gema en posición:("+x + ","+y+"), SI es accesible");
+            }
             
             java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
             heuristicList.add(pair1);
@@ -232,15 +235,9 @@ public class Agent extends BaseAgent {
 
         //ordena en funcion de las heursiticas
         heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
-        
-        for( java.util.Map.Entry<Integer,Integer> p : heuristicList )
-        {
-            System.out.println("practica_busqueda.Agent.Gems()"+p.toString()+"\n");
-            int i = p.getKey();
-
-            //OrderedGem.add( new Node( new Vector2d(x,y)));
-            OrderedGem.add( gem.get(i) );
-        }
+        heuristicList.forEach((p) -> {
+            OrderedGem.add( gem.get(p.getKey()) );
+        });
         
         return OrderedGem;
     }
