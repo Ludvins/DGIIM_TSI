@@ -3,18 +3,11 @@ package practica_busqueda;
 // General java imports
 import java.util.ArrayList;
 import java.util.*;
-import java.util.Random;
-import java.util.stream.Stream;
-import java.awt.List;
-import static java.util.Arrays.*;
 // General game imports
 import core.game.StateObservation;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
-
-import javax.swing.*;
-import javax.swing.plaf.nimbus.State;
 import java.lang.*;
 /**
  * Agent class
@@ -112,7 +105,7 @@ public class Agent extends BaseAgent {
 
                     pf.state = stateObs;
                     pf.grid = stateObs.getObservationGrid();
-                    //pf.astar = new AStar(pf);
+
                     if (pf.astar == null){
                         System.out.println("Astar nulo");
                     }
@@ -288,7 +281,7 @@ public class Agent extends BaseAgent {
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
         System.out.println("[isSafe]: x: " + x + ", y: " + (y-1) + ", tipo: " + uptype );
-        return type != ObservationType.WALL && type != ObservationType.BOULDER
+        return type != ObservationType.WALL && type != ObservationType.BOULDER && type != ObservationType.SCORPION && type != ObservationType.BAT
                 && uptype != ObservationType.BOULDER;
     }
 
