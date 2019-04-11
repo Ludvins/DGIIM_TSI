@@ -2,7 +2,7 @@ package practica_busqueda;
 
 // General java imports
 import java.util.ArrayList;
-import java.util.; 
+import java.util.*;
 import java.util.Random;
 import java.util.stream.Stream;
 import java.awt.List;
@@ -29,6 +29,7 @@ public class Agent extends BaseAgent {
     private PlayerObservation lastPosition;
     private int local_gem_counter;
     private Observation next_gem;
+    private ArrayList<Observation> gems;
 
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
         super(so, elapsedTimer);
@@ -44,7 +45,10 @@ public class Agent extends BaseAgent {
         // Get last known position
         lastPosition = getPlayer(so);
         
-        ArrayList<Observation> gemas_ordenadas_heuristicas = this.Gems( so );
+        gems = this.Gems( so );
+        for (Observation gem : gems) {
+            System.out.println("Posicion" + gem.getX() + " " + gem.getY());
+        }
     }
 
     @Override
@@ -85,11 +89,16 @@ public class Agent extends BaseAgent {
             // Look for another gem
             else {
                 System.out.println("[ACT]: Buscamos la siguiente gema.");
-                // Select nearest gem
-                ArrayList<core.game.Observation>[] gemList
-                        = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
-                next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
+
+
+                // Select nearest gem
+                //ArrayList<core.game.Observation>[] gemList
+                //        = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+
+                next_gem = this.gems.get(0);
+                this.gems.remove(0);
+
                 //next_gem = this.Gems(stateObs).get(0);
                 System.out.println("[ACT]: Posicion de la siguiente gema: " + next_gem.getX() + ", " + next_gem.getY());
                 // Calculate shortest path to nearest exit
@@ -173,7 +182,7 @@ public class Agent extends BaseAgent {
 
     //Making it a function only for debugging issues
 
-    private boolean areBoulberAbove(Node node, StateObservation stateObs){
+    private boolean isBoulderAbove(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
 
@@ -181,8 +190,8 @@ public class Agent extends BaseAgent {
     }
 
         
-    private boolean isBoulberAbove(int x, int y, StateObservation stateObs){
-        return ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
+    private boolean isBoulderAbove(int x, int y, StateObservation stateObs){
+        return ObservationType.BOULDER == getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
 
 
@@ -203,14 +212,13 @@ public class Agent extends BaseAgent {
         for( int i = 0; i < gemList.size(); ++i)
         {
             int h = 0;
-            //if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
-            // intente ponerlo en una función para que no fuera todo horrible y no lo conseguí
+            if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) ){
+                h+=30;
+            }
+
             int x = gem.get(i).getX();
             int y = gem.get(i).getY();
-            boolean boulderAbove = ObservationType.BOULDER ==   getObservationGrid(stateObs)[x][y-1].get(0).getType();
-            if (boulderAbove)
-                h += 30;
-            
+
             
             //Calculate Manhattan Metric to each gem
             Node nowPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
@@ -223,15 +231,13 @@ public class Agent extends BaseAgent {
         } 
 
         //ordena en funcion de las heursiticas
-        heuristicList.sort( (p1,p2) -> p1.getValue().compareTo(p2.getValue()));
+        heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
         
         for( java.util.Map.Entry<Integer,Integer> p : heuristicList )
         {
             System.out.println("practica_busqueda.Agent.Gems()"+p.toString()+"\n");
             int i = p.getKey();
-            int x = gem.get(i).getX();
-            int y = gem.get(i).getY();
-            
+
             //OrderedGem.add( new Node( new Vector2d(x,y)));
             OrderedGem.add( gem.get(i) );
         }
