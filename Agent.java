@@ -47,9 +47,10 @@ public class Agent extends BaseAgent {
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
 
+
         System.out.println("[ACT]: Posicion actual: " + getPlayer(stateObs).getX() + " " + getPlayer(stateObs).getY());
 
-        Types.ACTIONS action;
+        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
 
         if (getNumGems(stateObs) != local_gem_counter){
             local_gem_counter+=1;
@@ -59,6 +60,7 @@ public class Agent extends BaseAgent {
 
         // Get current position and clear path if needed
         PlayerObservation avatar = getPlayer(stateObs);
+
         if (((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY()))
                 && !path.isEmpty()) {
             System.out.println("[ACT]: Entra en función 1.");
@@ -87,10 +89,11 @@ public class Agent extends BaseAgent {
                 /**
                 En caso de querer coger la gema mas cercana utilizar este vector.
                  **/
-                // Select nearest gem
+                //Select nearest gem
                 //ArrayList<core.game.Observation>[] gemList
                 //        = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
+                //next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
                 /**
                  * Coger la mejor gema segun la heuristica.
                  */
@@ -130,9 +133,12 @@ public class Agent extends BaseAgent {
         }
         action = computeNextAction(avatar, nextPos);
 
+        StateObservation next_state = stateObs.copy();
+        next_state.advance(action);
 
-        if (nextPos.position.x == next_gem.getX() && nextPos.position.y == next_gem.getY()){
+        if (getNumGems(next_state) > getNumGems(stateObs)){
             System.out.println("[ACT]: La siguiente posicion es una gema");
+            System.out.println("[ACT]: Acción a devolver: " + action);
             path.clear();
             return action;
         }
@@ -147,14 +153,13 @@ public class Agent extends BaseAgent {
             System.out.println("[ACT]: La siguiente posición no es segura");
             path.clear();
             action = escape_from_current_position(stateObs);
-
         }
 
         lastPosition = avatar;
 
         System.out.println("[ACT]: Acción a devolver: " + action);
-        return action;
 
+        return action;
     }
 
     /*******************************************************
@@ -180,15 +185,18 @@ public class Agent extends BaseAgent {
         {
             int h = 0;
             if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
-            {   h+=30;   }
+            {
+                h+=30;
+            }
 
             int x = gem.get(i).getX();
             int y = gem.get(i).getY();
 
             if( null == pf.getPath(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()),
                                   new Vector2d(x, y)) )
-            {  h+=10000;  
-               System.out.println("Gema en posición:("+x + ","+y+"), NO es accesible");
+            {
+                h += 10000;
+                System.out.println("Gema en posición:("+x + ","+y+"), NO es accesible");
             }
             else
             {
@@ -204,7 +212,9 @@ public class Agent extends BaseAgent {
         heuristicList.forEach((p) -> {
             OrderedGem.add( gem.get(p.getKey()) );
         });
-        
+
+
+
         return OrderedGem;
     }
 
@@ -297,7 +307,7 @@ public class Agent extends BaseAgent {
         neighbours.add(new Node(actual.position.copy().add(0,-1)));
 
         for (Node neighbour: neighbours) {
-            if (isSafe(neighbour, stateObs)) {
+            if (isSafe(neighbour, stateObs) ) {
                 return computeNextAction(getPlayer(stateObs), neighbour);
             }
         }
@@ -344,6 +354,7 @@ public class Agent extends BaseAgent {
             return Types.ACTIONS.ACTION_DOWN;
 
         return Types.ACTIONS.ACTION_UP;
+
 
     }
 

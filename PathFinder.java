@@ -6,6 +6,11 @@ import ontology.Types;
 import tools.Vector2d;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PathFinder {
 
@@ -120,8 +125,13 @@ public class PathFinder {
 
         for(int i = 0; i < x_arrNeig.length; ++i)
         {
-            if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i]))
+            if (grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
+                neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
+            }
+            else if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i])
+                    && grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7)) //Si la casilla tiene una piedra encima entonces no es transitable
             {
+
                 neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
             }
         }
