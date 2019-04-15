@@ -223,6 +223,7 @@ public class Agent extends BaseAgent {
     private boolean isBoulderAbove(int x, int y, StateObservation stateObs){
         return ObservationType.BOULDER == getObservationGrid(stateObs)[x][y-1].get(0).getType();
     }
+    
     private boolean areBoulberNearby(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
