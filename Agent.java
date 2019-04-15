@@ -191,15 +191,16 @@ public class Agent extends BaseAgent {
 
             int x = gem.get(i).getX();
             int y = gem.get(i).getY();
-
-            if( null == pf.getPath(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()),
-                                  new Vector2d(x, y)) )
+            ArrayList<Node> pa = pf.getPath(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()),
+                                  new Vector2d(x, y));
+            if( null ==  pa )
             {
                 h += 10000;
                 System.out.println("Gema en posición:("+x + ","+y+"), NO es accesible");
             }
             else
             {
+                h += pa.size();
                 System.out.println("Gema en posición:("+x + ","+y+"), SI es accesible");
             }
             
