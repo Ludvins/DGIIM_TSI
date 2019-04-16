@@ -15,6 +15,8 @@ import java.lang.*;
  */
 
 
+
+
 public class Agent extends BaseAgent {
     // Basic A* agent
     private PathFinder pf;
@@ -23,6 +25,7 @@ public class Agent extends BaseAgent {
     private int local_gem_counter;
     private Observation next_gem;
     private ArrayList<Observation> gems;
+    private States actual;
 
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
         super(so, elapsedTimer);
@@ -42,7 +45,7 @@ public class Agent extends BaseAgent {
         for (Observation gem : gems) {
             System.out.println("Posicion" + gem.getX() + " " + gem.getY());
         }
-        next_gem = gems.get(0);
+        actual = States.NEED_NEW_OBJETIVE;
     }
 
     @Override
@@ -51,124 +54,123 @@ public class Agent extends BaseAgent {
 
         Node nowPos = new Node(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()));
         System.out.println("[ACT]: Posicion actual: " + getPlayer(stateObs).getX() + " " + getPlayer(stateObs).getY());
-
-        Types.ACTIONS action;
-
-        //if (getNumGems(stateObs) != local_gem_counter){
-        //    local_gem_counter+=1;
-        //    System.out.println("[ACT]: Gema conseguida.");
-            //path.clear();
-            //next_gem = this.gems.get(0);
-            //this.gems.remove(0);
-            //this.gems.add(this.gems.size(), next_gem);
-        //}
+        PlayerObservation avatar = getPlayer(stateObs);
 
         // Get current position and clear path if needed
-        PlayerObservation avatar = getPlayer(stateObs);
         if (((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY()))
                 && !path.isEmpty()) {
-            System.out.println("[ACT]: Entra en función 1.");
             path.remove(0);
         }
 
-        // Get current gem count
-        int gems = getNumGems(stateObs);
+        if (local_gem_counter != getNumGems(stateObs)){
+            actual = States.JUST_GOT_GEM;
+        }
 
-        // Update path
-        if (path.isEmpty()) {
-            System.out.println("[ACT]: El camino esta vacio");
-            // Look for the exit (all gems collected)
-            if (gems == NUM_GEMS_FOR_EXIT) {
+        Types.ACTIONS ret_action;
 
-                Observation exit = this.getExit(stateObs);
+        while (true) {
+            System.out.println("[ACT]: Estado actual " + actual);
+            switch (actual) {
+                case LOOKING_FOR_GEM:
 
-                // Calculate shortest path to nearest exit
-                if (!setAstarPath(avatar, exit)){
-                    pf.state = stateObs;
-                    pf.grid = stateObs.getObservationGrid();
-                    path = pf.astar._findPath(nowPos, new Node(new Vector2d(exit.getX(), exit.getY())));
-                    if (path.isEmpty()){
-                        System.out.println("NO EXISTE CAMINO A LA SALIDA");
+                    System.out.println("Objetivo: " + next_gem.getX() + " " + next_gem.getY());
+                    Node nextPos;
+                    if (path != null && !path.isEmpty()) {
+                        nextPos = path.get(0);
+                    } else {
+                        nextPos = nowPos;
                     }
-                }
-            }
-            // Look for another gem
-            else {
-                System.out.println("[ACT]: Buscamos la siguiente gema.");
+                    ret_action = computeNextAction(avatar, nextPos);
 
+                    if (action_implies_death(stateObs, ret_action)) {
+                        System.out.println("[ACT]: La siguiente accion implica la muerte");
+                        path.clear();
+                        actual = States.ESCAPING;
+                    } else if (!isSafe(nextPos, stateObs)) {
+                        System.out.println("[ACT]: La siguiente posición no es segura");
+                        path.clear();
+                        actual = States.ESCAPING;
+                    } else if (monsterNearby(nextPos, stateObs)) {
+                        System.out.println("HAY UN MONSTRUO CERCAAAAAA");
+                        path.clear();
+                        actual = States.ESCAPING;
 
-                /**
-                En caso de querer coger la gema mas cercana utilizar este vector.
-                 **/
-                //Select nearest gem
-                //ArrayList<core.game.Observation>[] gemList
-                //        = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
-
-                //next_gem = new Observation(gemList[0].get(0), stateObs.getBlockSize());
-                /**
-                 * Coger la mejor gema segun la heuristica.
-                 */
-                next_gem = this.gems.get(0);
-                this.gems.remove(0);
-                this.gems.add(this.gems.size(), next_gem);
-
-                System.out.println("[ACT]: Posicion de la siguiente gema: " + next_gem.getX() + ", " + next_gem.getY());
-                // Calculate shortest path to nearest exit
-                if (!setAstarPath(avatar, next_gem)) {
-
-                    System.out.println("[ACT]: No existe camino a la siguiente gema.");
-
-                    pf.state = stateObs;
-                    pf.grid = stateObs.getObservationGrid();
-
-                    if (pf.astar == null){
-                        System.out.println("Astar nulo");
+                    } else {
+                        System.out.println("[ACT]: Acción a devolver: " + ret_action);
+                        lastPosition = avatar;
+                        return ret_action;
                     }
-                    System.out.println(nowPos.position);
 
-                    pf.runAll((int) nowPos.position.x, (int) nowPos.position.y);
+                    break;
+                case JUST_GOT_GEM:
+                    local_gem_counter += 1;
+                    System.out.println("[ACT]: Gema conseguida.");
+                    actual = States.NEED_NEW_OBJETIVE;
+                    break;
 
-                }
+                case SETTING_PATH_FOR_GEM:
 
+                    if (!setAstarPath(avatar, next_gem)) {
+
+                        System.out.println("[ACT]: No existe camino a la siguiente gema.");
+
+                        pf.state = stateObs;
+                        pf.grid = stateObs.getObservationGrid();
+
+                        if (pf.astar == null) {
+                            System.out.println("Astar nulo");
+                        }
+                        pf.runAll((int) nowPos.position.x, (int) nowPos.position.y);
+                        if (!setAstarPath(avatar, next_gem)) {
+                            actual = States.NEED_NEW_OBJETIVE;
+                        }
+                    } else {
+                        actual = States.LOOKING_FOR_GEM;
+                    }
+
+                    break;
+
+                case NEED_NEW_OBJETIVE:
+
+                    if (local_gem_counter == NUM_GEMS_FOR_EXIT) {
+                        actual = States.GOT_ALL_GEMS;
+                    } else {
+                        next_gem = this.gems.get(0);
+                        this.gems.remove(0);
+                        //this.gems.add(this.gems.size(), next_gem);
+                        actual = States.SETTING_PATH_FOR_GEM;
+                    }
+                    break;
+
+                case ESCAPING:
+                    this.gems.add(this.gems.size(), next_gem);
+                    actual = States.NEED_NEW_OBJETIVE;
+                    return escape_from_current_position(stateObs);
+
+                case GOT_ALL_GEMS:
+                    Observation exit = getExit(stateObs);
+                    if (!setAstarPath(avatar, exit)) {
+
+                        System.out.println("[ACT]: No existe camino a la siguiente gema.");
+
+                        pf.state = stateObs;
+                        pf.grid = stateObs.getObservationGrid();
+
+                        if (pf.astar == null) {
+                            System.out.println("Astar nulo");
+                        }
+                        pf.runAll((int) nowPos.position.x, (int) nowPos.position.y);
+                        if (!setAstarPath(avatar, next_gem)) {
+                            System.out.println("No hay camino a la salida");
+                        }
+                    }
+
+                    actual = States.LOOKING_FOR_GEM;
+                    break;
             }
+
         }
 
-        // Calculate next action
-        Node nextPos;
-        if (path != null && !path.isEmpty()) {
-            nextPos = path.get(0);
-        }
-        else{
-            nextPos = nowPos;
-        }
-        action = computeNextAction(avatar, nextPos);
-
-        System.out.println("La accion a devolver va a ser " + action);
-
-        if (action_implies_death(stateObs, action)){
-            System.out.println("[ACT]: La siguiente accion implica la muerte");
-            path.clear();
-            action = escape_from_current_position(stateObs);
-        }
-
-        if (!isSafe(nextPos, stateObs)){
-            System.out.println("[ACT]: La siguiente posición no es segura");
-            path.clear();
-            action = escape_from_current_position(stateObs);
-        }
-
-        if(monsterNearby(nextPos, stateObs)){
-            System.out.println("HAY UN MONSTRUO CERCAAAAAA");
-            path.clear();
-
-            action = escape_from_current_position(stateObs);
-        }
-
-        lastPosition = avatar;
-
-        System.out.println("[ACT]: Acción a devolver: " + action);
-
-        return action;
     }
 
     private boolean monsterNearby(Node nextPos, StateObservation so){
@@ -235,8 +237,6 @@ public class Agent extends BaseAgent {
 
                 java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
                 heuristicList.add(pair1);
-                
-                System.out.println("    \n\n\n");
             }
         //Despues de aplicar la heuristica ordena el vector    
         heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
