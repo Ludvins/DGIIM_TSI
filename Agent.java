@@ -181,38 +181,53 @@ public class Agent extends BaseAgent {
             gem.add( new Observation(gemList.get(i), stateObs.getBlockSize()));
         } 
         
-        for( int i = 0; i < gemList.size(); ++i)
+        int lastPosx = getPlayer(stateObs).getX();
+        int lastPosy = getPlayer(stateObs).getY();
+        for (int j = 0; j < gemList.size(); ++j)
         {
-            int h = 0;
-            if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
+            for( int i = 0; i < gem.size(); ++i)
             {
-                h+=30;
-            }
+                int h = 0;
+                if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
+                {
+                    h+=30;
+                }
 
-            int x = gem.get(i).getX();
-            int y = gem.get(i).getY();
-            ArrayList<Node> pa = pf.getPath(new Vector2d(getPlayer(stateObs).getX(), getPlayer(stateObs).getY()),
-                                  new Vector2d(x, y));
-            if( null ==  pa )
-            {
-                h += 10000;
-                System.out.println("Gema en posición:("+x + ","+y+"), NO es accesible");
+                int x = gem.get(i).getX();
+                int y = gem.get(i).getY();
+                ArrayList<Node> pa = pf.getPath(new Vector2d( lastPosx, lastPosy ),
+                                      new Vector2d(x, y));
+                if( null ==  pa )
+                {
+                    h += 10000;
+                    System.out.println("Gema en posición:("+x + ","+y+"), NO es accesible");
+                }
+                else
+                {
+                    h += pa.size();
+                    System.out.println("Gema en posición:("+x + ","+y+"), SI es accesible");
+                }
+
+                java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
+                heuristicList.add(pair1);
+                
+                System.out.println("    \n\n\n");
             }
-            else
-            {
-                h += pa.size();
-                System.out.println("Gema en posición:("+x + ","+y+"), SI es accesible");
-            }
-            
-            java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
-            heuristicList.add(pair1);
-        } 
+        //Despues de aplicar la heuristica ordena el vector    
+        heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
+        
+        OrderedGem.add(gem.get(heuristicList.get(0).getKey()));
+        lastPosx = gem.get(heuristicList.get(0).getKey()).getX();
+        lastPosy = gem.get(heuristicList.get(0).getKey()).getY();
+        gem.remove(gem.get(heuristicList.get(0).getKey()));
+        
+        heuristicList = new java.util.ArrayList<>();
+        }
 
         //ordena en funcion de las heursiticas
-        heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
-        heuristicList.forEach((p) -> {
+       /*heuristicList.forEach((p) -> {
             OrderedGem.add( gem.get(p.getKey()) );
-        });
+        });*/
 
 
 
