@@ -92,12 +92,10 @@ public class Agent extends BaseAgent {
                         path.clear();
                         actual = States.ESCAPING;
                     } else if (monsterNearby(nextPos, stateObs)) {
-                      System.out.println("HAY UN MONSTRUO CERCAAAAAA");
-                      path.clear();
-                     actual = States.ESCAPING;
-                    }
-
-                    else {
+                        System.out.println("HAY UN MONSTRUO CERCAAAAAA");
+                        path.clear();
+                        actual = States.ESCAPING;
+                    } else {
                         System.out.println("[ACT]: Acción a devolver: " + ret_action);
                         lastPosition = avatar;
                         return ret_action;
