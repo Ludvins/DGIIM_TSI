@@ -65,9 +65,9 @@ public class PathFinder {
                 y_arrNeig = new int[]{0,  0};
             }else
             {
-                //up, down, left, right
-                x_arrNeig = new int[]{0,    0,    -1,    1};
-                y_arrNeig = new int[]{-1,   1,     0,    0};
+                // down, left, right, up
+                x_arrNeig = new int[]{  0,    -1,    1, 0};
+                y_arrNeig = new int[]{  1,     0,    0, -1};
             }
         }
     }

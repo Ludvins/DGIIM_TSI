@@ -78,11 +78,19 @@ public class Agent extends BaseAgent {
             System.out.println("[ACT]: Numero de gemas obtenidas: " + local_gem_counter + " " + getNumGems(stateObs));
             switch (actual) {
 
-                case BELLOW_WANTED_GEM:
+                case NEAR_WANTED_GEM:
 
-                    if (nowPos.position.x == next_gem.getX() && nowPos.position.y - 1 == next_gem.getY()){
-                        System.out.println("[ACT - BELLOW_WANTED_GEM]: Debajo de la gema deseada");
+                    if (nowPos.position.x == next_gem.getX() && nowPos.position.y - 1 == next_gem.getY()) {
+                        System.out.println("[ACT - NEAR_WANTED_GEM]: Debajo de la gema deseada");
                         return Types.ACTIONS.ACTION_UP;
+                    }
+                    if (nowPos.position.y == next_gem.getY() && nowPos.position.x + 1 == next_gem.getX()){
+                        System.out.println("[ACT - NEAR_WANTED_GEM]: A la isquierda de la gema deseada");
+                       return Types.ACTIONS.ACTION_RIGHT;
+                    }
+                    if (nowPos.position.y == next_gem.getY() && nowPos.position.x - 1 == next_gem.getX()){
+                        System.out.println("[ACT - NEAR_WANTED_GEM]: A la derecha de la gema deseada");
+                       return Types.ACTIONS.ACTION_LEFT;
                     }
                     actual = States.NEED_NEW_OBJETIVE;
                     break;
@@ -100,9 +108,11 @@ public class Agent extends BaseAgent {
                     }
                     ret_action = computeNextAction(avatar, nextPos);
 
-                    if (nowPos.position.x == next_gem.getX() && nowPos.position.y - 1 == next_gem.getY()){
-                        System.out.println("[ACT - LOOKING_FOR_GEM]: Debajo de la gema deseada");
-                        actual = States.BELLOW_WANTED_GEM;
+                    if ((nowPos.position.x == next_gem.getX() && nowPos.position.y - 1 == next_gem.getY())
+                            || nowPos.position.y  == next_gem.getY() && ( nowPos.position.x + 1 == next_gem.getX() || nowPos.position.x -1  == next_gem.getX())
+                    ){
+                        System.out.println("[ACT - LOOKING_FOR_GEM]: Al lado de la gema deseada");
+                        actual = States.NEAR_WANTED_GEM;
                         break;
                     }
 
@@ -135,7 +145,13 @@ public class Agent extends BaseAgent {
                 case JUST_GOT_GEM:
                     local_gem_counter += 1;
                     System.out.println("[ACT - JUST_GOT_GEM]: Gema conseguida.");
-                    actual = States.NEED_NEW_OBJETIVE;
+
+                    if (nowPos.position.x == next_gem.getX() && nowPos.position.y == next_gem.getY()) { // Esto arregla la siguiente situacion: Coger una gema de camino a otra.
+                        actual = States.NEED_NEW_OBJETIVE;
+                    }
+                    else {
+                        actual = States.LOOKING_FOR_GEM;
+                    }
                     break;
 
                 case SETTING_PATH_FOR_GEM:
@@ -162,9 +178,10 @@ public class Agent extends BaseAgent {
 
                 case NEED_NEW_OBJETIVE:
 
-                    if (local_gem_counter == NUM_GEMS_FOR_EXIT || getNumGems(stateObs) == NUM_GEMS_FOR_EXIT) {
+                    if (local_gem_counter >= NUM_GEMS_FOR_EXIT || getNumGems(stateObs) >= NUM_GEMS_FOR_EXIT) {
                         actual = States.GOT_ALL_GEMS;
                     } else {
+
                         next_gem = this.gems.get(0);
                         this.gems.remove(0);
                         actual = States.SETTING_PATH_FOR_GEM;
@@ -256,9 +273,10 @@ public class Agent extends BaseAgent {
      *******************************************************/
 
     private ArrayList<Observation> Gems( StateObservation stateObs){
+
         ArrayList<core.game.Observation> gemList
             = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
-        
+
         //Definicion de variables
         ArrayList<Observation> gem = new ArrayList<>();
         java.util.List<java.util.Map.Entry<Integer,Integer>> heuristicList = new java.util.ArrayList<>();
