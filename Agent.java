@@ -87,7 +87,7 @@ public class Agent extends BaseAgent {
                         return Types.ACTIONS.ACTION_UP;
                     }
                     if (nowPos.position.y == next_gem.getY() && nowPos.position.x + 1 == next_gem.getX()){
-                        System.out.println("[ACT - NEAR_WANTED_GEM]: A la isquierda de la gema deseada");
+                        System.out.println("[ACT - NEAR_WANTED_GEM]: A la izquierda de la gema deseada");
                        return Types.ACTIONS.ACTION_RIGHT;
                     }
                     if (nowPos.position.y == next_gem.getY() && nowPos.position.x - 1 == next_gem.getX()){
@@ -426,8 +426,19 @@ public class Agent extends BaseAgent {
             if (isSafe(neighbour, stateObs)
                     && !action_implies_death(stateObs, ret)
                     && !monsterNearby(neighbour, stateObs)){
-                System.out.println("El vecino seguro es: " + neighbour.position.x + " " + neighbour.position.y);
-                return ret;
+
+                StateObservation copy = stateObs.copy();
+                copy.advance(ret);
+
+                pf.grid = copy.getObservationGrid();
+                pf.state = copy;
+                boolean encerrado = pf.astar._findPath(neighbour, new Node( new Vector2d(exit.getX(), exit.getY()))) == null;
+                pf.grid = stateObs.getObservationGrid();
+                pf.state = stateObs;
+                if (!encerrado) {
+                    System.out.println("El vecino seguro es: " + neighbour.position.x + " " + neighbour.position.y);
+                    return ret;
+                }
             }
         }
         System.out.println("[Escape]: El jugador muere de todas formas");

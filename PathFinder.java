@@ -65,7 +65,7 @@ public class PathFinder {
                 y_arrNeig = new int[]{0,  0};
             }else
             {
-                // down, left, right, up
+                // down, right, left, up
                 x_arrNeig = new int[]{   0,  -1,   1,   0  };
                 y_arrNeig = new int[]{   1,   0,   0,  -1  };
             }
@@ -125,11 +125,11 @@ public class PathFinder {
 
         for(int i = 0; i < x_arrNeig.length; ++i)
         {
-            //if (grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
-            //    neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
-            //}
+            if (grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
+                neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
+            }
             if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i])
-                   // && grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7) //Si la casilla tiene una piedra encima entonces no es transitable
+                   && grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7) //Si la casilla tiene una piedra encima entonces no es transitable
             )
             {
 
