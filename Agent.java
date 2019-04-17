@@ -159,15 +159,14 @@ public class Agent extends BaseAgent {
                     System.out.println("La gema objetivo es :" + next_gem.getX() + " " + next_gem.getY());
                     if (!setAstarPath(avatar, next_gem)) {
 
-                        System.out.println("[ACT - SETTING_PATH]: No existe camino a la siguiente gema.");
-                        this.gems.add(this.gems.size(), next_gem);
                         pf.state = stateObs;
                         pf.grid = stateObs.getObservationGrid();
 
                         path = pf.astar._findPath(nowPos, new Node(new Vector2d(next_gem.getX(), next_gem.getY())));
                         if (path == null || path.isEmpty()){
+                            System.out.println("[ACT - SETTING_PATH]: No existe camino a la siguiente gema.");
                             actual = States.NEED_NEW_OBJETIVE;
-
+                            this.gems.add(this.gems.size(), next_gem);
                         } else {
                             actual = States.LOOKING_FOR_GEM;
                         }
@@ -409,7 +408,7 @@ public class Agent extends BaseAgent {
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
-        return type != ObservationType.WALL && type != ObservationType.BOULDER && type != ObservationType.SCORPION && type != ObservationType.BAT
+        return (type != ObservationType.BOULDER && type != ObservationType.SCORPION && type != ObservationType.BAT)
                 && uptype != ObservationType.BOULDER;
     }
 
@@ -424,8 +423,9 @@ public class Agent extends BaseAgent {
 
         for (Node neighbour: neighbours) {
             Types.ACTIONS ret = computeNextAction(getPlayer(stateObs), neighbour);
-            if (isSafe(neighbour, stateObs) && !action_implies_death(stateObs, ret) && !monsterNearby(neighbour, stateObs)) {
-
+            if (isSafe(neighbour, stateObs)
+                    && !action_implies_death(stateObs, ret)
+                    && !monsterNearby(neighbour, stateObs)){
                 System.out.println("El vecino seguro es: " + neighbour.position.x + " " + neighbour.position.y);
                 return ret;
             }
@@ -478,5 +478,4 @@ public class Agent extends BaseAgent {
         return Types.ACTIONS.ACTION_NIL;
 
     }
-
 }

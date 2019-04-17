@@ -25,7 +25,7 @@ public class AStar
 
     }
 
-    private static double heuristicEstimatedCost(Node curNode, Node goalNode)
+    public static double heuristicEstimatedCost(Node curNode, Node goalNode)
     {
         //4-way: using Manhattan
         double xDiff = Math.abs(curNode.position.x - goalNode.position.x);
@@ -161,6 +161,7 @@ public class AStar
             for(int i = 0; i < neighbours.size(); ++i)
             {
                 Node neighbour = neighbours.get(i);
+
                 double curDistance = neighbour.totalCost;
 
                 if(!openList.contains(neighbour) && !closedList.contains(neighbour))
@@ -194,7 +195,6 @@ public class AStar
         return calculatePath(node);
 
     }
-
     private int[][] uncompressPathId(int pathId)
     {
         int[][] ends = new int[2][2];

@@ -66,8 +66,8 @@ public class PathFinder {
             }else
             {
                 // down, left, right, up
-                x_arrNeig = new int[]{  0,    -1,    1, 0};
-                y_arrNeig = new int[]{  1,     0,    0, -1};
+                x_arrNeig = new int[]{   0,  -1,   1,   0  };
+                y_arrNeig = new int[]{   1,   0,   0,  -1  };
             }
         }
     }
@@ -129,7 +129,8 @@ public class PathFinder {
             //    neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
             //}
             if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i])
-                    && grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7)) //Si la casilla tiene una piedra encima entonces no es transitable
+                   // && grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7) //Si la casilla tiene una piedra encima entonces no es transitable
+            )
             {
 
                 neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
@@ -138,6 +139,5 @@ public class PathFinder {
 
         return neighbours;
     }
-
 
 }
