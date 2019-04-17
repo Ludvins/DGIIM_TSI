@@ -8,6 +8,8 @@ import core.game.StateObservation;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
+
+import javax.swing.plaf.nimbus.State;
 import java.lang.*;
 /**
  * Agent class
@@ -115,7 +117,13 @@ public class Agent extends BaseAgent {
                         actual = States.NEAR_WANTED_GEM;
                         break;
                     }
-
+                    if (monsterNearby(nextPos, stateObs)) {
+                        System.out.println("[ACT - LOOKING_FOR_GEM]: HAY UN MONSTRUO CERCAAAAAA");
+                        path.clear();
+                        actual = States.ESCAPING;
+                        this.gems.add(this.gems.size(), next_gem);
+                        break;
+                    }
                     System.out.println("[ACT - LOOKING_FOR_GEM]: La accion computada es " + ret_action);
                     if (action_implies_death(stateObs, ret_action)) {
                         System.out.println("[ACT - LOOKING_FOR_GEM]: La siguiente accion implica la muerte");
@@ -129,13 +137,6 @@ public class Agent extends BaseAgent {
                         path.clear();
                         this.gems.add(this.gems.size(), next_gem);
                         actual = States.ESCAPING;
-                        break;
-                    }
-                    if (monsterNearby(nextPos, stateObs)) {
-                        System.out.println("[ACT - LOOKING_FOR_GEM]: HAY UN MONSTRUO CERCAAAAAA");
-                        path.clear();
-                        actual = States.ESCAPING;
-                        this.gems.add(this.gems.size(), next_gem);
                         break;
                     }
                         System.out.println("[ACT - LOOKING_FOR_GEM]: Acción a devolver: " + ret_action);
@@ -155,21 +156,21 @@ public class Agent extends BaseAgent {
                     break;
 
                 case SETTING_PATH_FOR_GEM:
-
+                    System.out.println("La gema objetivo es :" + next_gem.getX() + " " + next_gem.getY());
                     if (!setAstarPath(avatar, next_gem)) {
 
                         System.out.println("[ACT - SETTING_PATH]: No existe camino a la siguiente gema.");
-
+                        this.gems.add(this.gems.size(), next_gem);
                         pf.state = stateObs;
                         pf.grid = stateObs.getObservationGrid();
 
-                        pf.astar._findPath(nowPos, new Node(new Vector2d(next_gem.getX(), next_gem.getY())));
-                        if (path.isEmpty()){
+                        path = pf.astar._findPath(nowPos, new Node(new Vector2d(next_gem.getX(), next_gem.getY())));
+                        if (path == null || path.isEmpty()){
                             actual = States.NEED_NEW_OBJETIVE;
+
+                        } else {
+                            actual = States.LOOKING_FOR_GEM;
                         }
-                        //if (!setAstarPath(avatar, next_gem)) {
-                        //    actual = States.NEED_NEW_OBJETIVE;
-                        //}
                     } else {
                         actual = States.LOOKING_FOR_GEM;
                     }
@@ -198,14 +199,16 @@ public class Agent extends BaseAgent {
                     path.clear();
                     if (!setAstarPath(avatar, exit)) {
 
-                        System.out.println("[ACT - GOT_ALL_GEMS]: No existe camino a la siguiente gema.");
+                        System.out.println("[ACT - GOT_ALL_GEMS]: No existe camino a la salida");
 
                         pf.state = stateObs;
                         pf.grid = stateObs.getObservationGrid();
-                        pf.astar._findPath(nowPos, new Node(new Vector2d(exit.getX(), exit.getY())));
+                        path = pf.astar._findPath(nowPos, new Node(new Vector2d(exit.getX(), exit.getY())));
                         if (path.isEmpty()) {
                             System.out.println("NO EXISTE CAMINO A LA SALIDA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                            return Types.ACTIONS.ACTION_NIL;
                         }
+
                     }
                     actual = States.GOING_TO_EXIT;
                     break;
@@ -224,6 +227,13 @@ public class Agent extends BaseAgent {
                     ret_action = computeNextAction(avatar, nextPos);
 
                     System.out.println("[ACT - GOING_EXIT]: La accion computada es " + ret_action);
+
+                    if (monsterNearby(nextPos, stateObs)) {
+                        System.out.println("[ACT - GOING_EXIT]: HAY UN MONSTRUO CERCAAAAAA");
+                        path.clear();
+                        actual = States.ESCAPING;
+                        break;
+                    }
                     if (action_implies_death(stateObs, ret_action)) {
                         System.out.println("[ACT - GOING_EXIT]: La siguiente accion implica la muerte");
                         path.clear();
@@ -236,12 +246,7 @@ public class Agent extends BaseAgent {
                         actual = States.ESCAPING;
                         break;
                     }
-                    if (monsterNearby(nextPos, stateObs)) {
-                        System.out.println("[ACT - GOING_EXIT]: HAY UN MONSTRUO CERCAAAAAA");
-                        path.clear();
-                        actual = States.ESCAPING;
-                        break;
-                    }
+
                         System.out.println("[ACT - GOING_EXIT]: Acción a devolver: " + ret_action);
                         lastPosition = avatar;
                         return ret_action;
@@ -252,21 +257,7 @@ public class Agent extends BaseAgent {
 
     }
 
-    private boolean monsterNearby(Node nextPos, StateObservation so){
-        ObservationType type = getObservationGrid(so)[ (int) nextPos.position.x][ (int) nextPos.position.y].get(0).getType();
-        if (type == ObservationType.BAT || type == ObservationType.SCORPION){
-            return true;
-        }
 
-        for (Node n : pf.getNeighbours(nextPos)){
-            ObservationType t = getObservationGrid(so)[ (int) n.position.x][ (int) n.position.y].get(0).getType();
-            if (t == ObservationType.BAT || t == ObservationType.SCORPION){
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /*******************************************************
      * Gem Listing Methods
@@ -398,7 +389,16 @@ public class Agent extends BaseAgent {
     /*************************************************
      * Safety Methods
      *************************************************/
+   private boolean monsterNearby(Node Pos, StateObservation so){
 
+        for (Node n : pf.getNeighbours(Pos)){
+            ObservationType t = getObservationGrid(so)[ (int) n.position.x][ (int) n.position.y].get(0).getType();
+            if (t == ObservationType.BAT || t == ObservationType.SCORPION){
+                return true;
+            }
+        }
+        return false;
+    }
     // Comprueba si la posicion es segura.
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
@@ -409,7 +409,6 @@ public class Agent extends BaseAgent {
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
-        System.out.println("[isSafe]: x: " + x + ", y: " + (y-1) + ", tipo: " + uptype );
         return type != ObservationType.WALL && type != ObservationType.BOULDER && type != ObservationType.SCORPION && type != ObservationType.BAT
                 && uptype != ObservationType.BOULDER;
     }
@@ -420,20 +419,19 @@ public class Agent extends BaseAgent {
         int y = getPlayer(stateObs).getY();
         Node actual = new Node(new Vector2d(x,y));
         System.out.println("[Escape]: Buscando ruta de escape de posible muerte");
-        ArrayList<Node> neighbours = new ArrayList<>();
 
-        neighbours.add(new Node(actual.position.copy().add(1,0)));
-        neighbours.add(new Node(actual.position.copy().add(-1,0)));
-        neighbours.add(new Node(actual.position.copy().add(0,1)));
-        neighbours.add(new Node(actual.position.copy().add(0,-1)));
+        ArrayList<Node> neighbours = pf.getNeighbours(actual);
 
         for (Node neighbour: neighbours) {
-            if (isSafe(neighbour, stateObs) && !monsterNearby(neighbour, stateObs) ) {
-                return computeNextAction(getPlayer(stateObs), neighbour);
+            Types.ACTIONS ret = computeNextAction(getPlayer(stateObs), neighbour);
+            if (isSafe(neighbour, stateObs) && !action_implies_death(stateObs, ret) && !monsterNearby(neighbour, stateObs)) {
+
+                System.out.println("El vecino seguro es: " + neighbour.position.x + " " + neighbour.position.y);
+                return ret;
             }
         }
         System.out.println("[Escape]: El jugador muere de todas formas");
-        return Types.ACTIONS.ACTION_NIL;
+        return Types.ACTIONS.reverseACTION(getLastAction());
     }
 
     // Comprueba si la accion correspondiente implica la muerte segun el juego.
@@ -454,7 +452,7 @@ public class Agent extends BaseAgent {
         System.out.println("[setAstarPath]: Calculando camino.");
         path = pf.getPath(new Vector2d(initial.getX(), initial.getY()),
                                   new Vector2d(goal.getX(), goal.getY()));
-        if (path == null) {
+        if (path == null || path.isEmpty()) {
             path = new ArrayList<Node>();
             return false;
         }
