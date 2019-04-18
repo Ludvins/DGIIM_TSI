@@ -37,6 +37,8 @@ public class Agent extends BaseAgent {
         ArrayList<Integer> tiposObs = new ArrayList();
         tiposObs.add(0);  // <- Muros
         tiposObs.add(7);  // <- Piedras
+        tiposObs.add(10); // <- Escorpión
+        tiposObs.add(11); // <- Murcielago
 
         // Init pathfinder
         pf = new PathFinder(tiposObs);
@@ -318,6 +320,11 @@ public class Agent extends BaseAgent {
         
         heuristicList = new java.util.ArrayList<>();
         }
+        
+        try{
+            Thread.sleep(1500);
+        }
+        catch(Exception e){}
 
         //ordena en funcion de las heursiticas
        /*heuristicList.forEach((p) -> {
@@ -366,24 +373,6 @@ public class Agent extends BaseAgent {
 
         return result;
     }
-    
-    private boolean boulderComing(Node node, StateObservation stateObs){
-        int x = (int) node.position.x;
-        int y = (int) node.position.y;
-
-        //
-        if( y == 0 )
-        {
-            return true;
-        }
-        else
-        {
-        y = y-1;
-        ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
-        System.out.println("[isComing]: x: " + x + ", y: " + y + ", tipo: " + type );
-        return type == ObservationType.BOULDER;
-        }
-    }
 
     /*************************************************
      * Safety Methods
@@ -402,14 +391,22 @@ public class Agent extends BaseAgent {
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
-
+        boolean nearMonster = false;
 
         //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
+        
+        
+        for (Node n : pf.getNeighbours(node)){
+             if( monsterNearby(n, stateObs))
+                 nearMonster = true;
+        }
+        
+        
         return (type != ObservationType.BOULDER && type != ObservationType.SCORPION && type != ObservationType.BAT)
-                && uptype != ObservationType.BOULDER;
+                && uptype != ObservationType.BOULDER && !nearMonster;
     }
 
     // Calcula una accion de escape.
