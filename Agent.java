@@ -76,6 +76,10 @@ public class Agent extends BaseAgent {
         Types.ACTIONS ret_action;
 
         while (true) {
+            try{
+                Thread.sleep(100);
+            }
+            catch(Exception e){}
 
             System.out.println("[ACT]: Estado actual " + actual);
             System.out.println("[ACT]: El vector de gemas tiene tamaño " + this.gems.size());
@@ -119,6 +123,7 @@ public class Agent extends BaseAgent {
                         actual = States.NEAR_WANTED_GEM;
                         break;
                     }
+
                     if (monsterNearby(nextPos, stateObs)) {
                         System.out.println("[ACT - LOOKING_FOR_GEM]: HAY UN MONSTRUO CERCAAAAAA");
                         path.clear();
@@ -159,7 +164,6 @@ public class Agent extends BaseAgent {
 
                 case SETTING_PATH_FOR_GEM:
                     System.out.println("La gema objetivo es :" + next_gem.getX() + " " + next_gem.getY());
-                    if (!setAstarPath(avatar, next_gem)) {
 
                         pf.state = stateObs;
                         pf.grid = stateObs.getObservationGrid();
@@ -172,9 +176,6 @@ public class Agent extends BaseAgent {
                         } else {
                             actual = States.LOOKING_FOR_GEM;
                         }
-                    } else {
-                        actual = States.LOOKING_FOR_GEM;
-                    }
 
                     break;
 
@@ -205,7 +206,7 @@ public class Agent extends BaseAgent {
                         pf.state = stateObs;
                         pf.grid = stateObs.getObservationGrid();
                         path = pf.astar._findPath(nowPos, new Node(new Vector2d(exit.getX(), exit.getY())));
-                        if (path.isEmpty()) {
+                        if (path == null || path.isEmpty()) {
                             System.out.println("NO EXISTE CAMINO A LA SALIDA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                             return Types.ACTIONS.ACTION_NIL;
                         }
@@ -289,7 +290,7 @@ public class Agent extends BaseAgent {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs) )
                 {
-                    h+=30;
+                    h+=10;
                 }
 
                 int x = gem.get(i).getX();
@@ -321,10 +322,7 @@ public class Agent extends BaseAgent {
         heuristicList = new java.util.ArrayList<>();
         }
         
-        try{
-            Thread.sleep(1500);
-        }
-        catch(Exception e){}
+
 
         //ordena en funcion de las heursiticas
        /*heuristicList.forEach((p) -> {
@@ -339,6 +337,22 @@ public class Agent extends BaseAgent {
     /*************************************************
      * Boulder Nearby Methods
      *************************************************/
+
+    private boolean boulderOverGem(Node node, StateObservation stateObs){
+        int x = (int) node.position.x;
+        int y = (int) node.position.y;
+        ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
+        ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
+        return type == ObservationType.GEM && uptype == ObservationType.BOULDER;
+    }
+
+    private boolean boulderOverNothing(Node node, StateObservation stateObs){
+        int x = (int) node.position.x;
+        int y = (int) node.position.y;
+        ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
+        ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
+        return type == ObservationType.GROUND && uptype == ObservationType.BOULDER;
+    }
 
     private boolean isBoulderAbove(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
@@ -403,10 +417,13 @@ public class Agent extends BaseAgent {
              if( monsterNearby(n, stateObs))
                  nearMonster = true;
         }
-        
-        
-        return (type != ObservationType.BOULDER && type != ObservationType.SCORPION && type != ObservationType.BAT)
-                && uptype != ObservationType.BOULDER && !nearMonster;
+
+        if (type == ObservationType.BOULDER || type == ObservationType.SCORPION || type == ObservationType.BAT || nearMonster)
+            return false;
+        if (uptype ==  ObservationType.BOULDER) {
+            return type == ObservationType.GEM;
+        }
+        return true;
     }
 
     // Calcula una accion de escape.
