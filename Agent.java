@@ -403,7 +403,20 @@ public class Agent extends BaseAgent {
 
         return result;
     }
+      
+       /*    for( int i = 0; i <= r; ++i)
+        {
+            for( int j = 0; j <=i; ++j)
+            {
+                ObservationType type1 = getObservationGrid(so)[x+i-j][y+j].get(0).getType();
+                
+                ObservationType type2 = getObservationGrid(so)[x-i+j][y-j].get(0).getType();
 
+                if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT ||
+                    type2 == ObservationType.SCORPION || type2 == ObservationType.BAT )
+                        result = true;
+            }
+        }*/
     /*************************************************
      * Safety Methods
      *************************************************/
