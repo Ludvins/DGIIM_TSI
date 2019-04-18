@@ -28,9 +28,15 @@ public class AStar
     public static double heuristicEstimatedCost(Node curNode, Node goalNode)
     {
         //4-way: using Manhattan
+
+        int spin = 0;
+        if (curNode.position.x != goalNode.position.x && curNode.position.y != goalNode.position.y)
+            spin = 1;
+
+
         double xDiff = Math.abs(curNode.position.x - goalNode.position.x);
         double yDiff = Math.abs(curNode.position.y - goalNode.position.y);
-        return xDiff + yDiff;
+        return xDiff + yDiff + spin;
 
         //This is Euclidean distance(sub-optimal here).
         //return curNode.position.dist(goalNode.position);
