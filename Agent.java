@@ -77,7 +77,7 @@ public class Agent extends BaseAgent {
 
         while (true) {
             try{
-                Thread.sleep(1000);
+                Thread.sleep(0);
             }
             catch(Exception e){}
 
@@ -311,15 +311,15 @@ public class Agent extends BaseAgent {
                 java.util.Map.Entry<Integer,Integer> pair1=new java.util.AbstractMap.SimpleEntry<>(i,h);
                 heuristicList.add(pair1);
             }
-        //Despues de aplicar la heuristica ordena el vector    
-        heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
-        
-        OrderedGem.add(gem.get(heuristicList.get(0).getKey()));
-        lastPosx = gem.get(heuristicList.get(0).getKey()).getX();
-        lastPosy = gem.get(heuristicList.get(0).getKey()).getY();
-        gem.remove(gem.get(heuristicList.get(0).getKey()));
-        
-        heuristicList = new java.util.ArrayList<>();
+            //Despues de aplicar la heuristica ordena el vector    
+            heuristicList.sort(Comparator.comparing(Map.Entry::getValue));
+
+            OrderedGem.add(gem.get(heuristicList.get(0).getKey()));
+            lastPosx = gem.get(heuristicList.get(0).getKey()).getX();
+            lastPosy = gem.get(heuristicList.get(0).getKey()).getY();
+            gem.remove(gem.get(heuristicList.get(0).getKey()));
+
+            heuristicList = new java.util.ArrayList<>();
         }
         
 
@@ -374,17 +374,13 @@ public class Agent extends BaseAgent {
         int[] num = {-1,0,1};
         for( int i : num )
         {
-        ObservationType type1 = getObservationGrid(stateObs)[x+i][y].get(0).getType();
-        ObservationType type2 = getObservationGrid(stateObs)[x][y+i].get(0).getType();
-        
-        if( type1 == ObservationType.BOULDER)
-                result = false;
-        if(type2 == ObservationType.BOULDER ) 
-                result = false;
-            
+            ObservationType type1 = getObservationGrid(stateObs)[x+i][y].get(0).getType();
+            ObservationType type2 = getObservationGrid(stateObs)[x][y+i].get(0).getType();
+
+            if( type1 == ObservationType.BOULDER || type2 == ObservationType.BOULDER)
+                    result = false;        
         }
         
-
         return result;
     }
 
@@ -392,35 +388,61 @@ public class Agent extends BaseAgent {
      * Safety Methods
      *************************************************/
    private boolean monsterNearby(Node Pos, StateObservation so){
+        int x = (int) Pos.position.x;
+        int y = (int) Pos.position.y;
+        boolean result = false;
+        
+        int[] num = {-1,0,1};
+        for( int i : num )
+        {
+            ObservationType type1 = getObservationGrid(so)[x+i][y].get(0).getType();
+            ObservationType type2 = getObservationGrid(so)[x][y+i].get(0).getType();
 
-        for (Node n : pf.getNeighbours(Pos)){
-            ObservationType t = getObservationGrid(so)[ (int) n.position.x][ (int) n.position.y].get(0).getType();
-            if (t == ObservationType.BAT || t == ObservationType.SCORPION){
-                return true;
+            if( type1 == ObservationType.SCORPION || type2 == ObservationType.SCORPION ||
+                type1 == ObservationType.BAT      || type2 == ObservationType.BAT )
+                    result = true;        
+        }
+        
+        return result;
+    }
+   
+      private boolean monsterNearby(Node Pos, StateObservation so, int r){
+        int x = (int) Pos.position.x;
+        int y = (int) Pos.position.y;
+        boolean result = false;
+        
+        ArrayList<Integer> num = new ArrayList<>();
+        num.add(0);
+        for(int i = 1; i <= r; ++i)
+        {
+            num.add(i);
+            num.add(-i);
+        }
+        for( int j : num )
+        {
+            for( int i : num )
+            {
+                ObservationType type1 = getObservationGrid(so)[x+i][y+j].get(0).getType();
+
+                if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT )
+                        result = true;        
             }
         }
-        return false;
+        
+        return result;
     }
+      
+      
     // Comprueba si la posicion es segura.
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
-        boolean nearMonster = false;
+        boolean nearMonster = monsterNearby(node, stateObs,1);
 
         //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
-        
-        
-        for (Node m : pf.getNeighbours(node)){
-        for (Node n : pf.getNeighbours(m)){
-             if( monsterNearby(n, stateObs))
-             { nearMonster = true;
-                 System.err.println("Monstruo cerca");
-             }
-        }
-        }
 
         if (type == ObservationType.BOULDER || type == ObservationType.SCORPION || type == ObservationType.BAT || nearMonster)
             return false;
