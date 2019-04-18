@@ -77,7 +77,7 @@ public class Agent extends BaseAgent {
 
         while (true) {
             try{
-                Thread.sleep(100);
+                Thread.sleep(1000);
             }
             catch(Exception e){}
 
@@ -413,9 +413,13 @@ public class Agent extends BaseAgent {
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
         
         
-        for (Node n : pf.getNeighbours(node)){
+        for (Node m : pf.getNeighbours(node)){
+        for (Node n : pf.getNeighbours(m)){
              if( monsterNearby(n, stateObs))
-                 nearMonster = true;
+             { nearMonster = true;
+                 System.err.println("Monstruo cerca");
+             }
+        }
         }
 
         if (type == ObservationType.BOULDER || type == ObservationType.SCORPION || type == ObservationType.BAT || nearMonster)
