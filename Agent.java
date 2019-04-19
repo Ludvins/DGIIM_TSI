@@ -89,7 +89,7 @@ public class Agent extends BaseAgent {
         while (true) {
 
             try{
-                Thread.sleep(200);
+                Thread.sleep(100);
             }
             catch(Exception ignored){}
 
@@ -394,8 +394,6 @@ public class Agent extends BaseAgent {
         int x = (int) Pos.position.x;
         int y = (int) Pos.position.y;
 
-        System.out.println("AAS" + x + " " + y);
-
         ArrayList<Observation>[][] grid = getObservationGrid(so);
 
         ObservationType[] types = {
@@ -432,8 +430,6 @@ public class Agent extends BaseAgent {
 
         if (isMonster(types[8]) && (types[5] == ObservationType.EMPTY || types[7] == ObservationType.EMPTY))
             return true;
-
-        System.out.println("Parte 1 hecha");
 
         int x_length = grid.length;
         int y_length = grid[0].length;
