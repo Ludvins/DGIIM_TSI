@@ -139,15 +139,9 @@ public class Agent extends BaseAgent {
                         actual = States.NEED_NEW_OBJETIVE;
                         break;
                     }
-                    ret_action = computeNextAction(avatar, nextPos);
 
-                    if (path.size() == 1)
-                    {
-                        System.out.println("[ACT - LOOKING_FOR_GEM]: Al lado de la gema deseada");
-                        last_state = actual;
-                        actual = States.NEAR_WANTED_GEM;
-                        break;
-                    }
+                    ret_action = computeNextAction(avatar, nextPos);
+                    System.out.println("[ACT - LOOKING_FOR_GEM]: La accion computada es " + ret_action);
 
                     if (monsterNearby(nextPos, stateObs)) {
                         System.out.println("[ACT - LOOKING_FOR_GEM]: HAY UN MONSTRUO CERCAAAAAA");
@@ -157,7 +151,7 @@ public class Agent extends BaseAgent {
                         this.gems.add(next_gem);
                         break;
                     }
-                    System.out.println("[ACT - LOOKING_FOR_GEM]: La accion computada es " + ret_action);
+
                     if (action_implies_death(stateObs, ret_action)) {
                         System.out.println("[ACT - LOOKING_FOR_GEM]: La siguiente accion implica la muerte");
                         path.clear();
@@ -174,9 +168,16 @@ public class Agent extends BaseAgent {
                         actual = States.ESCAPING;
                         break;
                     }
-                        System.out.println("[ACT - LOOKING_FOR_GEM]: Acción a devolver: " + ret_action);
-                        lastPosition = avatar;
-                        return ret_action;
+                    if (path.size() == 1){
+                        System.out.println("[ACT - LOOKING_FOR_GEM]: Al lado de la gema deseada");
+                        last_state = actual;
+                        actual = States.NEAR_WANTED_GEM;
+                        break;
+                    }
+
+                    System.out.println("[ACT - LOOKING_FOR_GEM]: Acción a devolver: " + ret_action);
+                    lastPosition = avatar;
+                    return ret_action;
 
                 /**
                  *********************************************************************************************************
@@ -248,10 +249,10 @@ public class Agent extends BaseAgent {
                  *********************************************************************************************************
                  */
                 case GOT_ALL_GEMS:
-                    path.clear();
+                    if (path != null)
+                        path.clear();
 
                     setPath(stateObs, nowPos, exit);
-
                     if (path == null || path.isEmpty()) {
                         System.out.println("NO EXISTE CAMINO A LA SALIDA!!");
                         return Types.ACTIONS.ACTION_NIL;
@@ -437,32 +438,41 @@ public class Agent extends BaseAgent {
         int x_length = grid.length;
         int y_length = grid[0].length;
 
+        /**
+         * O 1 O
+         * O 2 O
+         * O 3 O
+         * O 4 O
+         *
+         * La idea es que si estamos en 4 y queremos ir a 3, la posicion no es segura si en 1 hay un bicho y 2 esta vacio.
+         *
+         */
+
         if ( x - 2 > 1){
             ObservationType type = grid[x-2][y].get(0).getType();
             ObservationType next_type = grid[x-1][y].get(0).getType();
-            if (next_type == ObservationType.EMPTY && (type == ObservationType.SCORPION || type == ObservationType.BAT)){
+            if (next_type == ObservationType.EMPTY && isMonster(type)) {
                 return true;
             }
         }
         if ( x + 2 < x_length - 1){
             ObservationType type = grid[x+2][y].get(0).getType();
             ObservationType next_type = grid[x+1][y].get(0).getType();
-            if (next_type == ObservationType.EMPTY && (type == ObservationType.SCORPION || type == ObservationType.BAT)){
+            if (next_type == ObservationType.EMPTY && isMonster(type)){
                 return true;
             }
         }
         if ( y + 2 < y_length - 1){
             ObservationType type = grid[x][y+2].get(0).getType();
             ObservationType next_type = grid[x][y+1].get(0).getType();
-            if (next_type == ObservationType.EMPTY && (type == ObservationType.SCORPION || type == ObservationType.BAT)){
+            if (next_type == ObservationType.EMPTY && isMonster(type)){
                 return true;
             }
         }
-
         if ( y - 2 > 1){
             ObservationType type = grid[x][y-2].get(0).getType();
             ObservationType next_type = grid[x][y-1].get(0).getType();
-            if (next_type == ObservationType.EMPTY && (type == ObservationType.SCORPION || type == ObservationType.BAT)){
+            if (next_type == ObservationType.EMPTY && isMonster(type)){
                 return true;
             }
         }
@@ -527,7 +537,7 @@ public class Agent extends BaseAgent {
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
-        boolean nearMonster = monsterNearby(node, stateObs,1);
+        boolean nearMonster = monsterNearby(node, stateObs);
 
         //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
