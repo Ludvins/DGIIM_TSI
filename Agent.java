@@ -533,14 +533,13 @@ public class Agent extends BaseAgent {
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
-        boolean nearMonster = monsterNearby(node, stateObs);
 
         //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
         ObservationType uptype = getObservationGrid(stateObs)[x][y-1].get(0).getType();
         System.out.println("[isSafe]: x: " + x + ", y: " + y + ", tipo: " + type );
 
-        if (type == ObservationType.BOULDER || type == ObservationType.SCORPION || type == ObservationType.BAT || nearMonster)
+        if (type == ObservationType.BOULDER || type == ObservationType.SCORPION || type == ObservationType.BAT)
             return false;
         if (uptype ==  ObservationType.BOULDER) {
             return type == ObservationType.GEM;

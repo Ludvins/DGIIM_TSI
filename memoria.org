@@ -1,0 +1,72 @@
+#+TITLE: Tútulo
+#+SUBTITLE: TSI: Práctica 1 @@latex: \\@@ Nombre práctica @@latex: \\@@ Grupo X
+#+LANGUAGE: es
+#+AUTHOR: Luis Antonio Ortega Andrés @@latex: \\@@ Pedro Bonilla Nadal
+#+OPTIONS: toc:t num:3
+
+* Introducción.
+
+En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG_AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía demas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
+
+La memoria se dividirá en 3 partes, una descrición general de la solución, otra del comportamiento reactivo y otra del comportammiento deliberativo.
+
+* Descripción general de la solución.
+
+A grandes rasgos el comportamiento del avatar se basa en lo siguiente.
+
++ Realiza un estudio de las gemas que existen en el mapa (aprovechandose de que el mapa es conocido), el objetivo de esto es elegir el orden en el que se irá a cada una de las gemas detiendo en cuenta su posición y lo seguras que son.
++ El personaje tiene un comportamiento deliberativo donde según lo visto antes va cogiendo gemas, intentando siempre pasar por posiciones seguras (no presentan un riesgo evidente).
++ En caso de que suceda algo inesperado, por ejemplo, una piedra cayendo sobre el avatar o un enemigo acercandose, dispone de una serie de reglas reactivas, todas basadas en garantizar su seguridad.
++ La implementación del avatar se vaya en una máquina de estados, donde es llevar un control de la situación actual del avatar.
+
+* Comportamiento Deliberativo.
+
+En este apartado estudiaremos como funciona el aspecto deliberativo del avatar, lo diviremos en varios sub apartados.
+
+** Reconocimiento del mapa y estudio de las gemas.
+
+
+** Método de pathfinding.
+
+La forma en la que el avatar computa las rutas para llegar a las gemas es utilizando un algoritmo A^*, como el entorno GVGAI ya dispone de un algoritmo A^* programado en él y no pensamos que el objetivo de la práctica sea poner a prueba nuestra capacidad para programar el algoritmo de búsqueda (teniendo en cuenta que fue uno de los trabajos realizados en la asginatura previa, Inteligencia Arficial), hemos decidido copiar la implementación realizada en nuestro paquete y realizar modificaciónes sobre ella.
+Modificaciones realizadas:
+
++ En el método de generación de vecinos en ~pathfinder.java~, se ha añadido la siguiente consideración: una casilla bajo una roca *no es transitable*, hemos de tener en cuenta que aunque no sea transitable si es *alcanzable*, una gema bajo una piedra se puede coger desde alrededor, esto también se ha implementado. El resultado que tiene esto en el avatar es que los caminos que coge no intentan pasar por debajo de piedras salvo que la parte reactiva le diga lo contrario. De esta forma se evitan movimientos de piedras innecesarios y que podrían resultar en que el avatar quedara encerrado.
++ El comportamiento normal de este conjunto de clases se basa en precauclar todos los caminos en la inicialización y luego utilziarlos en cada iteración. Como en este juego está sujeto a cambios constantes (piedras y monstruos), hemos decidido no utilizar esta implementación y llamar directamente al A^* en cada iteración.
++ En la heurística de ~AStar.java~ se ha realizado un cambio, ya que esta no tenia en cuenta el coste de movimiento que implica realizar un giro. 
+
+
+
+* Comportamiento Reactivo
+
+El comportamiento reactivo del avatar esta basado en 3 grandes comprobaciones que se realizan en cada iteración.
+
+** Presencia de un monstruo cerca. 
+
+Esta comprobación se realiza en el método =monsterNearby= dentro de ~Agent.java~, su objetivo es comprobar si la posición a la que se pretende avanzar presenta algún riesgo debido a presencia de monstruos. 
+Supongamos que el avatar es A y quiere avanzar a la casilla I, el método comprueba todas las casillas numeradas.
+
+La primera comprobación es que en las casillas 2, 5, I , 6, 8 y 9 no existe un monstruo, en caso de haberlo la posición I no es segura, ya que en un solo movimiento podría matarnos el enemigo.
+
+| X | X | 0 | X | X |
+| X | 1 | 2 | 3 | X |
+| 4 | 5 | I | 6 | 7 |
+| X | 8 | A | 9 | X |
+
+Las siguientes comprobaciones se hacen teniendo en cuenta que los monstruos no necesitan realizar giros y que su movimiento se hace antes que el del avatar.
+Miramos que las posiciones 1 y 3 no sean un monstruo, en caso de serlo, estas posiciones suponen un problema solo en las siguientes ocasiones:
++ La posicion 1 será peligrosa si y solo si las casillas 2 o 5 se encuentran vacias, en caso de estar ocupadas la posición no es peligrosa.
++ La posicion 3 será peligrosa si y solo si las casillas 2 o 6 se encuentran vacias, en caso de estar ocupadas la posición no es peligrosa.
+Ahora se comprueban las casillas 0, 4 y 7, que serán peligrosas si y solo si las casillas 2, 5, y 6 respectivamente están vacias.
+
+** La acción implica la muerte.
+
+Este método simula que se realiza la acción que se quiere devolver, utilizando la herramienta que dispone GVGAI para ello, este método no es efectivo contra los monstruos ya que su movimiento es aleatorio y en la simulación pueden realizar un movimiento distinto al realizado despues.
+
+** La acción es segura.
+
+Este método se preocupa de comprobar si en la casilla a la que se quiere ir existe el riesgo de que vaya a caer una piedra. 
+
+** Acción de escape.
+
+En caso de que cualquiera de los métodos anteriores devuelva que la accion es peligrosa, el avatar entra en modo escape, donde llamará a ~escape_from_current_position~, un método encargado de devolver la acción que salvará al avatar. Para ello se cogen todas las acciones posibles que se pueden realizar y se hacen las 3 mismas comprobaciones sobre ellas hasta dar con una posición segura. En caso de no encontrarse, se devolverá la acción contraria a la realizada la ultima vez (con la idea de volver a la posición anterior). 
