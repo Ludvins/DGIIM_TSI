@@ -7,6 +7,7 @@ import java.util.*;
 import core.game.StateObservation;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
+import tools.Pair;
 import tools.Vector2d;
 
 import javax.swing.plaf.nimbus.State;
@@ -239,11 +240,20 @@ public class Agent extends BaseAgent {
                  */
 
                 case ESCAPING:
+
+                    Pair<Types.ACTIONS, Node> ret = escape_from_current_position(stateObs);
+
+                    Types.ACTIONS ret_act = ret.first;
+                    nextPos = ret.second;
+                    if (monsterNearby(nextPos, stateObs) || action_implies_death(stateObs, ret_act) || !isSafe(nextPos, stateObs)) {
+                        System.out.println("[ACT - Escape]: Nos quedamos en modo escapar");
+                        return ret.first;
+                    }
+
                     last_state = actual;
                     actual = States.NEED_NEW_OBJETIVE;
-                    Types.ACTIONS ret = escape_from_current_position(stateObs);
-                    System.out.println("[ACT - SCAPING]: La accion de escape es " + ret);
-                    return ret;
+                    System.out.println("[ACT - SCAPING]: La accion de escape es " + ret.first);
+                    return ret.first;
 
                 /**
                  *********************************************************************************************************
@@ -549,7 +559,7 @@ public class Agent extends BaseAgent {
     }
 
     // Calcula una accion de escape.
-    private Types.ACTIONS escape_from_current_position(StateObservation stateObs){
+    private Pair<Types.ACTIONS,Node> escape_from_current_position(StateObservation stateObs){
         int x = getPlayer(stateObs).getX();
         int y = getPlayer(stateObs).getY();
         Node actual = new Node(new Vector2d(x,y));
@@ -573,12 +583,12 @@ public class Agent extends BaseAgent {
                 pf.state = stateObs;
                 if (!shut_in) {
                     System.out.println("El vecino seguro es: " + neighbour.position.x + " " + neighbour.position.y);
-                    return ret;
+                    return new Pair<>(ret, neighbour);
                 }
             }
         }
         System.out.println("[Escape]: El jugador muere de todas formas");
-        return Types.ACTIONS.reverseACTION(getLastAction());
+        return new Pair<>(Types.ACTIONS.reverseACTION(getLastAction()), actual);
     }
 
 
