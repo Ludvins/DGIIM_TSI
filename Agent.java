@@ -30,6 +30,8 @@ public class Agent extends BaseAgent {
     private States actual;
     private States last_state;
     private Observation exit;
+    private ExitFinder ef;
+    private boolean alt_exit;
 
   /**
    * Instantiates a new Agent.
@@ -48,11 +50,13 @@ public class Agent extends BaseAgent {
 
         // Init pathfinder
         pf = new PathFinder(tiposObs);
+        ef = new ExitFinder(tiposObs);
         pf.run(so);
 
         // Get last known position
         lastPosition = getPlayer(so);
         exit = getExit(so);
+        alt_exit = false;
         
         gems = this.Gems( so );
         for (Observation gem : gems) {
@@ -262,21 +266,35 @@ public class Agent extends BaseAgent {
                     if (path != null)
                         path.clear();
 
-                    setPath(stateObs, nowPos, exit);
-                    if (path == null || path.isEmpty()) {
-                        System.out.println("NO EXISTE CAMINO A LA SALIDA!!");
-                        return Types.ACTIONS.ACTION_NIL;
-                    }
-                    last_state = actual;
-                    actual = States.GOING_TO_EXIT;
-                    break;
+                    if(!alt_exit){
+                        setPath(stateObs, nowPos, exit);
+                        if (path == null || path.isEmpty()) {
+                            System.out.println("NO EXISTE CAMINO A LA SALIDA!!");
+                            return Types.ACTIONS.ACTION_NIL;
+                        }
+                        
+                        last_state = actual;
+                        actual = States.GOING_TO_EXIT;
 
+                    }
+                    else{
+                        setExitPath(stateObs, nextPos);
+                        Types.ACTIONS result;
+                        if (path == null || path.isEmpty()) {
+                            System.out.println("NO se puede hacer camino seguro");
+                            alt_exit = false;
+                        }
+                        
+                        last_state = actual;
+                        actual = States.GOING_TO_EXIT;
+                    }
+                    break;
                 /**
                  *********************************************************************************************************
                  */
 
                 case GOING_TO_EXIT:
-
+                    
                     System.out.println("[ACT - GOING_EXIT]: Objetivo: " + exit.getX() + " " + exit.getY());
                     if (path != null && !path.isEmpty()) {
                         nextPos = path.get(0);
@@ -296,6 +314,7 @@ public class Agent extends BaseAgent {
                         path.clear();
                         last_state = actual;
                         actual = States.ESCAPING;
+                        //alt_exit = true;
                         break;
                     }
                     if (action_implies_death(stateObs, ret_action)) {
@@ -483,21 +502,7 @@ public class Agent extends BaseAgent {
             }
         }
 
-
-
-       /*
-        int[] num = {-1,0,1};
-        for( int i : num ){
-            ObservationType type1 = getObservationGrid(so)[ x+i ][  y  ].get(0).getType();
-            ObservationType type2 = getObservationGrid(so)[  x  ][ y+i ].get(0).getType();
-
-            if( type1 == ObservationType.SCORPION || type2 == ObservationType.SCORPION ||
-                type1 == ObservationType.BAT      || type2 == ObservationType.BAT )
-                    result = true;
-        }
-*/
         return false;
-
     }
 
     private boolean monsterNearby(Node Pos, StateObservation so, int r){
@@ -604,6 +609,12 @@ public class Agent extends BaseAgent {
 
     }
 
+    private void setExitPath(StateObservation stateObs, Node position){
+        ef.state = stateObs;
+        ef.grid = stateObs.getObservationGrid();
+        path = ef.astar._findPath(position, new Node(new Vector2d(exit.getX(), exit.getY())));
+
+    }
     private Types.ACTIONS computeNextAction(PlayerObservation avatar, Node nextPos) {
 
         if (nextPos.position.x != avatar.getX()) {
