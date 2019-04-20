@@ -103,7 +103,7 @@ public class PathFinder {
 
 
 
-    private boolean isObstacle(int row, int col)
+    protected boolean isObstacle(int row, int col)
     {
         if(row<0 || row>=grid.length) return true;
         if(col<0 || col>=grid[row].length) return true;
@@ -115,7 +115,6 @@ public class PathFinder {
         }
 
         return false;
-
     }
 
     public ArrayList<Node> getNeighbours(Node node) {

@@ -490,30 +490,12 @@ public class Agent extends BaseAgent {
 
     }
 
-      private boolean monsterNearby(Node Pos, StateObservation so, int r){
+    private boolean monsterNearby(Node Pos, StateObservation so, int r){
         int x = (int) Pos.position.x;
         int y = (int) Pos.position.y;
         boolean result = false;
 
-        ArrayList<Integer> num = new ArrayList<>();
-        num.add(0);
-        for(int i = 1; i <= r; ++i) {
-            num.add(i);
-            num.add(-i);
-        }
-        for( int j : num ) {
-            for( int i : num ) {
-                ObservationType type1 = getObservationGrid(so)[x+i][y+j].get(0).getType();
-
-                if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT )
-                        result = true;
-            }
-        }
-
-        return result;
-    }
-      
-       /*    for( int i = 0; i <= r; ++i)
+        for( int i = 0; i <= r; ++i)
         {
             for( int j = 0; j <=i; ++j)
             {
@@ -525,7 +507,18 @@ public class Agent extends BaseAgent {
                     type2 == ObservationType.SCORPION || type2 == ObservationType.BAT )
                         result = true;
             }
-        }*/
+        }
+        ArrayList<Integer> num = new ArrayList<>();
+        num.add(0);
+        for(int i = 1; i <= r; ++i) {
+            num.add(i);
+            num.add(-i);
+        }
+
+        return result;
+    }
+      
+
     /*************************************************
      * Safety Methods
      *************************************************/
