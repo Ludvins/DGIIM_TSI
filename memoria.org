@@ -19,6 +19,43 @@ A grandes rasgos el comportamiento del avatar se basa en lo siguiente.
 + En caso de que suceda algo inesperado, por ejemplo, una piedra cayendo sobre el avatar o un enemigo acercandose, dispone de una serie de reglas reactivas, todas basadas en garantizar su seguridad.
 + La implementación del avatar se vaya en una máquina de estados, donde es llevar un control de la situación actual del avatar.
 
+#+begin_src plantuml :file tryout.png
+(Looking for gem) as lfg
+(Near wanted gem) as nwg
+(Setting path for gem) as spfg
+(Need new objetive) as nno
+(Escaping) as e
+(Got all gems) as gag
+(Going to exit) as gte
+(Just got gem) as jgg
+
+nwg --> nno : Gema conseguida
+
+lfg --> e : Peligro
+lfg --> nwg : path.size == 1
+lfg --> nno : path.empty
+
+jgg --> nno : Era la gema buscada
+jgg --> lfg : No era la gema buscada
+
+spfg --> nno : No existe camino para la gema
+spfg --> lfg : Existe camino a la gema
+
+nno --> gag : 9 Gemas
+nno --> spfg : <9 gemas
+
+e --> nno
+
+gag --> gte
+
+gte --> e : Peligro
+#+end_src
+
+#+RESULTS:
+[[file:tryout.png]]
+
+
+
 * Comportamiento Deliberativo.
 
 En este apartado estudiaremos como funciona el aspecto deliberativo del avatar, lo diviremos en varios sub apartados.
