@@ -57,8 +57,11 @@ public class Agent extends BaseAgent {
         exit = getExit(so);
         turnsStoped = 0;
         gems = this.Gems( so );
+        if(verbose)
+        {
         for (Observation gem : gems) {
             System.out.println("Posicion" + gem.getX() + " " + gem.getY());
+        }
         }
         actual = States.NEED_NEW_OBJETIVE;
     }
