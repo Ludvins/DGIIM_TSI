@@ -395,13 +395,10 @@ public class Agent extends BaseAgent {
                 int y = gem.get(i).getY();
                 
 
-                if(monsterNearby(x, y, stateObs, 1)){
-                        h += 10;
-                    }
-                  if(monsterNearby(x, y, stateObs, 2)){
-                        h += 10;
-                    }
-                
+                if(monsterNearby(x, y, stateObs)){
+                        h += 30;
+                }
+ 
                 ArrayList<Node> pa = pf.getPath(new Vector2d( lastPosx, lastPosy ),
                                       new Vector2d(x, y));
                 if( null ==  pa ){
