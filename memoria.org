@@ -3,7 +3,6 @@
 #+LANGUAGE: es
 #+AUTHOR: Luis Antonio Ortega Andrés @@latex: \\@@ Pedro Bonilla Nadal
 #+OPTIONS: toc:t num:3
-
 * Introducción.
 
 En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG_AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía demas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
@@ -62,7 +61,33 @@ En este apartado estudiaremos como funciona el aspecto deliberativo del avatar, 
 
 ** Reconocimiento del mapa y estudio de las gemas.
 
+El comportamiento respecto al estudio de las gemas en función de su colocación con el mapa es reactivo y heurístico, para seleccionar en 
+que orden queremos intentar recoger las gemas. Este orden no será definitivo, puesto que la parte reactiva tendrá la capacidad de, en función 
+de la situación, dejar de intentar obtener una gema para obetener otra. El proceso de selección de las gema es así:
 
+#+begin_src python
+gemas = gemas_disponibles()
+pos   = posicion_jugador()
+
+Mientras queden_gemas():
+     ordenar_gemas_por_heurística()
+
+     gema_seleccionada = mejor_gema
+     pos = posicion_mejor_gema
+
+     gemas.eliminar(mejor_gema)
+     solucion.añadir_al_final(mejor_gema)
+
+#+end_src
+La heurística tiene en cuenta dos factores:
+
++ Se beneficia a las gemas que no tienen una roca encima, pues no varían la conectividad de los nodos del mapa permitiendo así explotar primero las gemas disponibles en el estado actual, para explotar luego las que surgen de variaciones del mapa.
+
++ Se perjudica a las gemas con bichos cerca de forma radial. Esto implica que se perjudican de manera incremental segun tengan un bicho en un radio de 3, 2 o 1 bloque, utilizando la distancia manhattan para generar estas bolas.
+
++ Cercania a la posicón *pos*. Está se incializa a la posición donde aparece el jugador,y se va actualizando con respecto a cada gema. Esta cercacina se calcula como la distancia del path hallado por el pathfinder. Suponiendo un mapa vacío con solo gemas, nuestro orden se comportaría como una solución *greedy* del *TSP*.
+
+De este modo nuestro jugador empieza con un orden coherente para intentar recoger las gemas.
 ** Método de pathfinding.
 
 La forma en la que el avatar computa las rutas para llegar a las gemas es utilizando un algoritmo A^*, como el entorno GVGAI ya dispone de un algoritmo A^* programado en él y no pensamos que el objetivo de la práctica sea poner a prueba nuestra capacidad para programar el algoritmo de búsqueda (teniendo en cuenta que fue uno de los trabajos realizados en la asginatura previa, Inteligencia Arficial), hemos decidido copiar la implementación realizada en nuestro paquete y realizar modificaciónes sobre ella.
