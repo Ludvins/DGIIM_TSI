@@ -214,7 +214,7 @@ public class Agent extends BaseAgent {
                     System.out.println("La gema objetivo es :" + next_gem.getX() + " " + next_gem.getY());
 
                     setPath(stateObs, nowPos, next_gem);
-
+                    // TODO Que pasa si no existe path a ninguna gema.
                     if (path == null || path.isEmpty()){
                         System.out.println("[ACT - SETTING_PATH]: No existe camino a la siguiente gema.");
                         last_state = actual;
@@ -271,6 +271,8 @@ public class Agent extends BaseAgent {
                         setPath(stateObs, nowPos, exit);
                         if (path == null || path.isEmpty()) {
                             System.out.println("NO se puede hacer camino seguro");
+                            pf.obstacles.clear();
+                            return Types.ACTIONS.ACTION_NIL;
                         } else {
                             last_state = actual;
                             actual = States.GOING_TO_EXIT;
@@ -303,7 +305,6 @@ public class Agent extends BaseAgent {
                         actual = States.ESCAPING;
                         System.err.println("SADSADASDASDA");
                         pf.obstacles.add(nextPos);
-                        //alt_exit = true;
                         break;
                     }
                     if (action_implies_death(stateObs, ret_action)) {
