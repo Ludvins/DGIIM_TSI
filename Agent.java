@@ -678,7 +678,7 @@ public class Agent extends BaseAgent {
         Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
  
         
-        for( int i = -1; i < 2; ++i)
+        /*for( int i = -1; i < 2; ++i)
         {
             // Si hay un bicho en una casilla, calcula como llegar a ella y va en dirección contraria
             if( getObservationGrid(stateObs)[x+i][y].get(0).getType() == ObservationType.BAT || 
@@ -693,8 +693,8 @@ public class Agent extends BaseAgent {
                 action = Types.ACTIONS.reverseACTION(computeNextAction(getPlayer(stateObs) , new Node( new Vector2d(x, y+i) ) ));
                 System.err.println("Estamos huyendo");
             }
-        }
-        
+        }*/
+
         //En caso de que no haya seguras, pero tampoco haya ningun mostruo colindando, se hace el sistema clásico
         if(action == Types.ACTIONS.ACTION_NIL)
             action = Types.ACTIONS.reverseACTION(getLastAction());
