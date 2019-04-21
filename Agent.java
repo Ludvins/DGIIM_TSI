@@ -371,11 +371,19 @@ public class Agent extends BaseAgent {
             {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs)){
-                    h+=10;
+                    h+=20;
                 }
 
                 int x = gem.get(i).getX();
                 int y = gem.get(i).getY();
+                
+                for( int r= 0; r < 3; ++r)
+                {
+                if(monsterNearby(x, y, stateObs, r)){
+                        h += 10;
+                    }
+                }
+                
                 ArrayList<Node> pa = pf.getPath(new Vector2d( lastPosx, lastPosy ),
                                       new Vector2d(x, y));
                 if( null ==  pa ){
@@ -505,32 +513,36 @@ public class Agent extends BaseAgent {
         return false;
     }
 
-    private boolean monsterNearby(Node Pos, StateObservation so, int r){
-        int x = (int) Pos.position.x;
-        int y = (int) Pos.position.y;
+    private boolean monsterNearby(int x, int y, StateObservation so, int r){
         boolean result = false;
 
         for( int i = 0; i <= r; ++i)
         {
             for( int j = 0; j <=i; ++j)
             {
-                ObservationType type1 = getObservationGrid(so)[x+i-j][y+j].get(0).getType();
+                ObservationType type1 = ObservationType.EMPTY;
+                ObservationType type2 = ObservationType.EMPTY;
                 
-                ObservationType type2 = getObservationGrid(so)[x-i+j][y-j].get(0).getType();
-
+                try{
+                    type1 = getObservationGrid(so)[x+i-j][y+j].get(0).getType();
+                }catch(ArrayIndexOutOfBoundsException e){ ; }
+                
+                try{
+                    type2 = getObservationGrid(so)[x-i+j][y-j].get(0).getType();
+                }catch(ArrayIndexOutOfBoundsException e){ ; }
+                
                 if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT ||
                     type2 == ObservationType.SCORPION || type2 == ObservationType.BAT )
                         result = true;
             }
         }
-        ArrayList<Integer> num = new ArrayList<>();
-        num.add(0);
-        for(int i = 1; i <= r; ++i) {
-            num.add(i);
-            num.add(-i);
-        }
-
         return result;
+    }
+    
+    private boolean monsterNearby(Node Pos, StateObservation so, int r){
+        int x = (int) Pos.position.x;
+        int y = (int) Pos.position.y;
+        return monsterNearby(x, y, so, r);
     }
       
 
@@ -541,6 +553,7 @@ public class Agent extends BaseAgent {
     private boolean isSafe(Node node, StateObservation stateObs){
         int x = (int) node.position.x;
         int y = (int) node.position.y;
+        //boolean monster_nearby = monsterNearby(node, stateObs, 1);
 
         //in type is the pos asked, in uptype is the pos above de current one.
         ObservationType type = getObservationGrid(stateObs)[x][y].get(0).getType();
