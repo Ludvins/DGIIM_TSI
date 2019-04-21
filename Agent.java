@@ -30,8 +30,6 @@ public class Agent extends BaseAgent {
     private States actual;
     private States last_state;
     private Observation exit;
-    private ExitFinder ef;
-    private boolean alt_exit;
     private int turnsStoped;
 
   /**
@@ -51,13 +49,11 @@ public class Agent extends BaseAgent {
 
         // Init pathfinder
         pf = new PathFinder(tiposObs);
-        ef = new ExitFinder(tiposObs);
         pf.run(so);
 
         // Get last known position
         lastPosition = getPlayer(so);
         exit = getExit(so);
-        alt_exit = false;
         turnsStoped = 0;
         gems = this.Gems( so );
         for (Observation gem : gems) {
@@ -271,31 +267,14 @@ public class Agent extends BaseAgent {
                  *********************************************************************************************************
                  */
                 case GOT_ALL_GEMS:
-                    if (path != null)
-                        path.clear();
 
-                    if(!alt_exit){
                         setPath(stateObs, nowPos, exit);
                         if (path == null || path.isEmpty()) {
-                            System.out.println("NO EXISTE CAMINO A LA SALIDA!!");
-                            return Types.ACTIONS.ACTION_NIL;
-                        }
-                        
-                        last_state = actual;
-                        actual = States.GOING_TO_EXIT;
-
-                    }
-                    else{
-                        setExitPath(stateObs, nextPos);
-                        Types.ACTIONS result;
-                        if (path == null || path.isEmpty()) {
                             System.out.println("NO se puede hacer camino seguro");
-                            alt_exit = false;
+                        } else {
+                            last_state = actual;
+                            actual = States.GOING_TO_EXIT;
                         }
-                        
-                        last_state = actual;
-                        actual = States.GOING_TO_EXIT;
-                    }
                     break;
                 /**
                  *********************************************************************************************************
@@ -641,12 +620,6 @@ public class Agent extends BaseAgent {
 
     }
 
-    private void setExitPath(StateObservation stateObs, Node position){
-        ef.state = stateObs;
-        ef.grid = stateObs.getObservationGrid();
-        path = ef.astar._findPath(position, new Node(new Vector2d(exit.getX(), exit.getY())));
-
-    }
     private Types.ACTIONS computeNextAction(PlayerObservation avatar, Node nextPos) {
 
         if (nextPos.position.x != avatar.getX()) {
