@@ -30,6 +30,8 @@ public class Agent extends BaseAgent {
     private States actual;
     private States last_state;
     private Observation exit;
+    private ExitFinder ef;
+    private boolean alt_exit;
     private int turnsStoped;
 
   /**
@@ -49,11 +51,13 @@ public class Agent extends BaseAgent {
 
         // Init pathfinder
         pf = new PathFinder(tiposObs);
+        ef = new ExitFinder(tiposObs);
         pf.run(so);
 
         // Get last known position
         lastPosition = getPlayer(so);
         exit = getExit(so);
+        alt_exit = false;
         turnsStoped = 0;
         gems = this.Gems( so );
         for (Observation gem : gems) {
@@ -270,15 +274,28 @@ public class Agent extends BaseAgent {
                     if (path != null)
                         path.clear();
 
-                    setPath(stateObs, nowPos, exit);
-                    if (path == null || path.isEmpty()) {
-                        System.out.println("NO EXISTE CAMINO A LA SALIDA!!");
-                        return Types.ACTIONS.ACTION_NIL;
+                    if(!alt_exit){
+                        setPath(stateObs, nowPos, exit);
+                        if (path == null || path.isEmpty()) {
+                            System.out.println("NO EXISTE CAMINO A LA SALIDA!!");
+                            return Types.ACTIONS.ACTION_NIL;
+                        }
+                        
+                        last_state = actual;
+                        actual = States.GOING_TO_EXIT;
+
                     }
-
-                    last_state = actual;
-                    actual = States.GOING_TO_EXIT;
-
+                    else{
+                        setExitPath(stateObs, nextPos);
+                        Types.ACTIONS result;
+                        if (path == null || path.isEmpty()) {
+                            System.out.println("NO se puede hacer camino seguro");
+                            alt_exit = false;
+                        }
+                        
+                        last_state = actual;
+                        actual = States.GOING_TO_EXIT;
+                    }
                     break;
                 /**
                  *********************************************************************************************************
@@ -307,6 +324,7 @@ public class Agent extends BaseAgent {
                         actual = States.ESCAPING;
                         System.err.println("SADSADASDASDA");
                         pf.obstacles.add(nextPos);
+                        //alt_exit = true;
                         break;
                     }
                     if (action_implies_death(stateObs, ret_action)) {
@@ -377,8 +395,11 @@ public class Agent extends BaseAgent {
                 int y = gem.get(i).getY();
                 
 
-                if(monsterNearby(x, y, stateObs)){
-                        h += 20;
+                if(monsterNearby(x, y, stateObs, 1)){
+                        h += 10;
+                    }
+                  if(monsterNearby(x, y, stateObs, 2)){
+                        h += 10;
                     }
                 
                 ArrayList<Node> pa = pf.getPath(new Vector2d( lastPosx, lastPosy ),
@@ -428,7 +449,7 @@ public class Agent extends BaseAgent {
         int x = (int) Pos.position.x;
         int y = (int) Pos.position.y;
         
-        return monsterNearby(x, y,  so);
+        return monsterNearby(x, y, so);
     }
     
     private boolean monsterNearby(int x, int y, StateObservation so){
@@ -514,6 +535,39 @@ public class Agent extends BaseAgent {
         return false;
     }
 
+    private boolean monsterNearby(int x, int y, StateObservation so, int r){
+        boolean result = false;
+
+        for( int i = 0; i <= r; ++i)
+        {
+            for( int j = 0; j <=i; ++j)
+            {
+                ObservationType type1 = ObservationType.EMPTY;
+                ObservationType type2 = ObservationType.EMPTY;
+                
+                try{
+                    type1 = getObservationGrid(so)[x+i-j][y+j].get(0).getType();
+                }catch(ArrayIndexOutOfBoundsException e){ ; }
+                
+                try{
+                    type2 = getObservationGrid(so)[x-i+j][y-j].get(0).getType();
+                }catch(ArrayIndexOutOfBoundsException e){ ; }
+                
+                if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT ||
+                    type2 == ObservationType.SCORPION || type2 == ObservationType.BAT )
+                        result = true;
+            }
+        }
+        return result;
+    }
+    
+    private boolean monsterNearby(Node Pos, StateObservation so, int r){
+        int x = (int) Pos.position.x;
+        int y = (int) Pos.position.y;
+        return monsterNearby(x, y, so, r);
+    }
+      
+
     /*************************************************
      * Safety Methods
      *************************************************/
@@ -590,6 +644,12 @@ public class Agent extends BaseAgent {
 
     }
 
+    private void setExitPath(StateObservation stateObs, Node position){
+        ef.state = stateObs;
+        ef.grid = stateObs.getObservationGrid();
+        path = ef.astar._findPath(position, new Node(new Vector2d(exit.getX(), exit.getY())));
+
+    }
     private Types.ACTIONS computeNextAction(PlayerObservation avatar, Node nextPos) {
 
         if (nextPos.position.x != avatar.getX()) {
