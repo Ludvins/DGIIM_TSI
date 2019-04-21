@@ -388,7 +388,7 @@ public class Agent extends BaseAgent {
             {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs)){
-                    h+=5;
+                    h+=20;
                 }
 
                 int x = gem.get(i).getX();
