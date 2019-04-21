@@ -83,6 +83,8 @@ La heurística tiene en cuenta dos factores:
 
 + Se beneficia a las gemas que no tienen una roca encima, pues no varían la conectividad de los nodos del mapa permitiendo así explotar primero las gemas disponibles en el estado actual, para explotar luego las que surgen de variaciones del mapa.
 
++ Se perjudica a las gemas con bichos cerca de forma radial. Esto implica que se perjudican de manera incremental segun tengan un bicho en un radio de 3, 2 o 1 bloque, utilizando la distancia manhattan para generar estas bolas.
+
 + Cercania a la posicón *pos*. Está se incializa a la posición donde aparece el jugador,y se va actualizando con respecto a cada gema. Esta cercacina se calcula como la distancia del path hallado por el pathfinder. Suponiendo un mapa vacío con solo gemas, nuestro orden se comportaría como una solución *greedy* del *TSP*.
 
 De este modo nuestro jugador empieza con un orden coherente para intentar recoger las gemas.
