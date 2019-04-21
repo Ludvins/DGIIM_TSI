@@ -41,7 +41,7 @@ public class PathFinder {
 
         obstacles = new ArrayList<Node>();
         init();
-        //runAll();
+        runAll();
 
         if(VERBOSE)
         {
