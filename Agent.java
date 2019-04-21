@@ -100,7 +100,7 @@ public class Agent extends BaseAgent {
         while (true) {
 
             try{
-                Thread.sleep(100);
+                Thread.sleep(0);
             }
             catch(Exception ignored){}
 
@@ -388,18 +388,16 @@ public class Agent extends BaseAgent {
             {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs)){
-                    h+=5;
+                    h+=10;
                 }
 
                 int x = gem.get(i).getX();
                 int y = gem.get(i).getY();
                 
-                for( int r= 0; r < 3; ++r)
-                {
-                if(monsterNearby(x, y, stateObs, r)){
-                        h += 10;
+
+                if(monsterNearby(x, y, stateObs)){
+                        h += 20;
                     }
-                }
                 
                 ArrayList<Node> pa = pf.getPath(new Vector2d( lastPosx, lastPosy ),
                                       new Vector2d(x, y));
@@ -447,7 +445,11 @@ public class Agent extends BaseAgent {
     private boolean monsterNearby(Node Pos, StateObservation so){
         int x = (int) Pos.position.x;
         int y = (int) Pos.position.y;
-
+        
+        return monsterNearby(x, y,  so);
+    }
+    
+    private boolean monsterNearby(int x, int y, StateObservation so){
         ArrayList<Observation>[][] grid = getObservationGrid(so);
 
         ObservationType[] types = {
