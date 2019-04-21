@@ -16,7 +16,7 @@ public class PathFinder {
 
     public AStar astar;
     public StateObservation state;
-
+    public ArrayList<Node> obstacles;
     public boolean VERBOSE = false;
 
     //All types are obstacles except the ones included in this array
@@ -39,8 +39,9 @@ public class PathFinder {
         this.grid = stateObs.getObservationGrid();
         this.astar = new AStar(this);
 
+        obstacles = new ArrayList<Node>();
         init();
-        runAll();
+        //runAll();
 
         if(VERBOSE)
         {
@@ -124,6 +125,12 @@ public class PathFinder {
 
         for(int i = 0; i < x_arrNeig.length; ++i)
         {
+
+            Node n = new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i]));
+
+            if (obstacles.contains(n))
+                continue;
+
             if (grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
                 neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
             }
@@ -132,7 +139,7 @@ public class PathFinder {
             )
             {
 
-                neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
+                neighbours.add(n);
             }
         }
 

@@ -32,6 +32,7 @@ public class Agent extends BaseAgent {
     private Observation exit;
     private ExitFinder ef;
     private boolean alt_exit;
+    private int turnsStoped;
 
   /**
    * Instantiates a new Agent.
@@ -57,7 +58,7 @@ public class Agent extends BaseAgent {
         lastPosition = getPlayer(so);
         exit = getExit(so);
         alt_exit = false;
-        
+        turnsStoped = 0;
         gems = this.Gems( so );
         for (Observation gem : gems) {
             System.out.println("Posicion" + gem.getX() + " " + gem.getY());
@@ -81,9 +82,14 @@ public class Agent extends BaseAgent {
         PlayerObservation avatar = getPlayer(stateObs);
 
         if (((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY()))
-                && !path.isEmpty()) {
+                && path != null && !path.isEmpty()) {
             path.remove(0);
+            turnsStoped = 0;
         }
+        else {
+            turnsStoped += 1;
+        }
+
         if (local_gem_counter != getNumGems(stateObs)){
             last_state = actual;
             actual = States.JUST_GOT_GEM;
@@ -94,7 +100,7 @@ public class Agent extends BaseAgent {
         while (true) {
 
             try{
-                Thread.sleep(0);
+                Thread.sleep(100);
             }
             catch(Exception ignored){}
 
@@ -181,6 +187,8 @@ public class Agent extends BaseAgent {
                     }
 
                     System.out.println("[ACT - LOOKING_FOR_GEM]: Acción a devolver: " + ret_action);
+
+
                     lastPosition = avatar;
                     return ret_action;
 
@@ -314,6 +322,8 @@ public class Agent extends BaseAgent {
                         path.clear();
                         last_state = actual;
                         actual = States.ESCAPING;
+                        System.err.println("SADSADASDASDA");
+                        pf.obstacles.add(nextPos);
                         //alt_exit = true;
                         break;
                     }
@@ -332,9 +342,16 @@ public class Agent extends BaseAgent {
                         break;
                     }
 
-                        System.out.println("[ACT - GOING_EXIT]: Acción a devolver: " + ret_action);
-                        lastPosition = avatar;
-                        return ret_action;
+                    if (turnsStoped == 4){
+                        System.err.println("AYY LMAOOO");
+                        pf.obstacles.add(nextPos);
+                        path.clear();
+                        last_state = States.GOING_TO_EXIT;
+                        actual = States.NEED_NEW_OBJETIVE;
+                    }
+                    System.out.println("[ACT - GOING_EXIT]: Acción a devolver: " + ret_action);
+                    lastPosition = avatar;
+                    return ret_action;
 
             }
 
@@ -371,7 +388,7 @@ public class Agent extends BaseAgent {
             {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs)){
-                    h+=10;
+                    h+=5;
                 }
 
                 int x = gem.get(i).getX();
