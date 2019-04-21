@@ -1,11 +1,12 @@
-#+TITLE: Tútulo
+#+TITLE: Título
 #+SUBTITLE: TSI: Práctica 1 @@latex: \\@@ Nombre práctica @@latex: \\@@ Grupo X
 #+LANGUAGE: es
 #+AUTHOR: Luis Antonio Ortega Andrés @@latex: \\@@ Pedro Bonilla Nadal
 #+OPTIONS: toc:t num:3
+#+LATEX_HEADER: \usepackage[vlined,linesnumbered]{algorithm2e}
 * Introducción.
 
-En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG_AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía demas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
+En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG_AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía ademas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
 
 La memoria se dividirá en 3 partes, una descrición general de la solución, otra del comportamiento reactivo y otra del comportammiento deliberativo.
 
@@ -18,6 +19,7 @@ A grandes rasgos el comportamiento del avatar se basa en lo siguiente.
 + En caso de que suceda algo inesperado, por ejemplo, una piedra cayendo sobre el avatar o un enemigo acercandose, dispone de una serie de reglas reactivas, todas basadas en garantizar su seguridad.
 + La implementación del avatar se vaya en una máquina de estados, donde es llevar un control de la situación actual del avatar.
 
+Aquí vemos un esquema de los diferentes estados en los que puede encontrarse el agente y de las transiciones que existen entre ellos.
 #+begin_src plantuml :file tryout.png
 (Looking for gem) as lfg
 (Near wanted gem) as nwg
@@ -54,6 +56,44 @@ gte --> e : Peligro
 [[file:tryout.png]]
 
 
+ El código correspondiente al metodo ~act~ tiene la siguiente estructura. 
+
+\begin{algorithm}[H]
+ \KwData{StateObservation stateObs}
+ \KwResult{Types.ACTIONS acción}
+
+    \While{true}{
+
+      \Switch{estado}{\\
+        \uCase{LOOKING\_FOR\_GEM}{\\
+        ...\\
+        }
+        \uCase{JUST\_GOT\_GEM}{\\
+        ...\\
+        }
+        \uCase{NEAR\_WANTED\_GEM}{\\
+        ...\\
+        }
+        \uCase{NEED\_NEW\_OBJETIVE}{\\
+        ...\\
+        }
+        \uCase{SETTING\_PATH}{\\
+        ...\\
+        }
+        \uCase{GOT\_ALL\_GEMS}{\\
+        ...\\
+        }
+        \uCase{GOING\_TO\_EXIT}{\\
+        ...\\
+        }
+        \uCase{ESCAPING}{\\
+        ...\\
+        }
+    }
+ }
+ \caption{función: \textit{act}}
+\end{algorithm}
+
 
 * Comportamiento Deliberativo.
 
@@ -65,20 +105,25 @@ El comportamiento respecto al estudio de las gemas en función de su colocación
 que orden queremos intentar recoger las gemas. Este orden no será definitivo, puesto que la parte reactiva tendrá la capacidad de, en función 
 de la situación, dejar de intentar obtener una gema para obetener otra. El proceso de selección de las gema es así:
 
-#+begin_src python
-gemas = gemas_disponibles()
-pos   = posicion_jugador()
+\begin{algorithm}[H]
+ \KwData{Datos}
+gemas = gemas\_disponibles()\\
+pos   = posicion\_jugador()
 
-Mientras queden_gemas():
-     ordenar_gemas_por_heurística()
+    \While{queden\_gemas}{
+     ordenar\_gemas\_por\_heurística()
 
-     gema_seleccionada = mejor_gema
-     pos = posicion_mejor_gema
+     gema\_seleccionada = mejor\_gema\\
+     pos = posicion\_mejor\_gema
 
-     gemas.eliminar(mejor_gema)
-     solucion.añadir_al_final(mejor_gema)
+     gemas.eliminar(mejor\_gema)\\
+     solucion.añadir\_al\_final(mejor\_gema)
 
-#+end_src
+    }
+ }
+ \caption{función: \textit{NOMBRE}}
+\end{algorithm}
+
 La heurística tiene en cuenta dos factores:
 
 + Se beneficia a las gemas que no tienen una roca encima, pues no varían la conectividad de los nodos del mapa permitiendo así explotar primero las gemas disponibles en el estado actual, para explotar luego las que surgen de variaciones del mapa.
@@ -94,6 +139,7 @@ La forma en la que el avatar computa las rutas para llegar a las gemas es utiliz
 Modificaciones realizadas:
 
 + En el método de generación de vecinos en ~pathfinder.java~, se ha añadido la siguiente consideración: una casilla bajo una roca *no es transitable*, hemos de tener en cuenta que aunque no sea transitable si es *alcanzable*, una gema bajo una piedra se puede coger desde alrededor, esto también se ha implementado. El resultado que tiene esto en el avatar es que los caminos que coge no intentan pasar por debajo de piedras salvo que la parte reactiva le diga lo contrario. De esta forma se evitan movimientos de piedras innecesarios y que podrían resultar en que el avatar quedara encerrado.
++ También se ha añadido a la clave ~pathfinding~ un vector de nodos, este es usado para añadir posiciones que no queramos que sean transitables.
 + El comportamiento normal de este conjunto de clases se basa en precauclar todos los caminos en la inicialización y luego utilziarlos en cada iteración. Como en este juego está sujeto a cambios constantes (piedras y monstruos), hemos decidido no utilizar esta implementación y llamar directamente al A^* en cada iteración.
 + En la heurística de ~AStar.java~ se ha realizado un cambio, ya que esta no tenia en cuenta el coste de movimiento que implica realizar un giro. 
 
@@ -106,13 +152,13 @@ El comportamiento reactivo del avatar esta basado en 3 grandes comprobaciones qu
 ** Presencia de un monstruo cerca. 
 
 Esta comprobación se realiza en el método =monsterNearby= dentro de ~Agent.java~, su objetivo es comprobar si la posición a la que se pretende avanzar presenta algún riesgo debido a presencia de monstruos. 
-Supongamos que el avatar es A y quiere avanzar a la casilla I, el método comprueba todas las casillas numeradas.
+Supongamos que el avatar es A y quiere avanzar a la casilla V, el método comprueba todas las casillas numeradas.
 
 La primera comprobación es que en las casillas 2, 5, I , 6, 8 y 9 no existe un monstruo, en caso de haberlo la posición I no es segura, ya que en un solo movimiento podría matarnos el enemigo.
 
 | X | X | 0 | X | X |
 | X | 1 | 2 | 3 | X |
-| 4 | 5 | I | 6 | 7 |
+| 4 | 5 | V | 6 | 7 |
 | X | 8 | A | 9 | X |
 
 Las siguientes comprobaciones se hacen teniendo en cuenta que los monstruos no necesitan realizar giros y que su movimiento se hace antes que el del avatar.
