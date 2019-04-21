@@ -32,7 +32,7 @@ public class Agent extends BaseAgent {
     private Observation exit;
     private int turnsStoped;
 
-    boolean verbose = false;
+    boolean verbose = true;
   /**
    * Instantiates a new Agent.
    *
@@ -670,12 +670,56 @@ public class Agent extends BaseAgent {
             }
         }
         
+        //A esta parte del código solo se llega si no hay acciones validas.
+        
         if(verbose)
-        System.out.println("[Escape]: El jugador muere de todas formas");
-        return new Pair<>(Types.ACTIONS.reverseACTION(getLastAction()), actual);
+            System.out.println("[Escape]: El jugador muere de todas formas");
+        
+        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
+ 
+        
+        for( int i = -1; i < 2; ++i)
+        {
+            // Si hay un bicho en una casilla, calcula como llegar a ella y va en dirección contraria
+            if( getObservationGrid(stateObs)[x+i][y].get(0).getType() == ObservationType.BAT || 
+                    getObservationGrid(stateObs)[x+i][y].get(0).getType() == ObservationType.SCORPION )
+            {
+                action = Types.ACTIONS.reverseACTION(computeNextAction(getPlayer(stateObs) , new Node( new Vector2d(x+i, y) ) ));
+                System.err.println("Estamos huyendo");
+            }
+            if( getObservationGrid(stateObs)[x][y+i].get(0).getType() == ObservationType.BAT || 
+                    getObservationGrid(stateObs)[x][y+i].get(0).getType() == ObservationType.SCORPION )
+            {
+                action = Types.ACTIONS.reverseACTION(computeNextAction(getPlayer(stateObs) , new Node( new Vector2d(x, y+i) ) ));
+                System.err.println("Estamos huyendo");
+            }
+        }
+        
+        //En caso de que no haya seguras, pero tampoco haya ningun mostruo colindando, se hace el sistema clásico
+        if(action == Types.ACTIONS.ACTION_NIL)
+            action = Types.ACTIONS.reverseACTION(getLastAction());
+        
+        System.err.println("estamos huyendo:" + action.toString());
+        return new Pair<>( action, computeAction( action, actual));
+        //this was the line pre-commit
+        //return new Pair<>(Types.ACTIONS.reverseACTION(getLastAction()), actual);
     }
 
-
+    Node computeAction(Types.ACTIONS action, Node node)
+    {
+        switch(action){
+            case ACTION_DOWN:
+                return new Node( new Vector2d(node.position.x, node.position.y+1) );
+            case ACTION_UP:
+                return new Node( new Vector2d(node.position.x, node.position.y-1) );
+            case ACTION_LEFT:
+                return new Node( new Vector2d(node.position.x-1, node.position.y) );
+            case ACTION_RIGHT:
+                return new Node( new Vector2d(node.position.x+1, node.position.y) );
+            default:
+                return node;
+        }
+    }
     /**
      * *********************************************
      * Path Methods
