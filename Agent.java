@@ -55,6 +55,7 @@ public class Agent extends BaseAgent {
         pf = new PathFinder(tiposObs);
         pf.run(so);
 
+        //System.out.println("");
         // Get last known position
         lastPosition = getPlayer(so);
         exit = getExit(so);
@@ -133,7 +134,7 @@ public class Agent extends BaseAgent {
         while (true) {
 
             try{
-                Thread.sleep(100);
+                Thread.sleep(00);
             }
             catch(Exception ignored){}
 
@@ -197,6 +198,7 @@ public class Agent extends BaseAgent {
                     System.out.println("[ACT - LOOKING_FOR_GEM]: La accion computada es " + ret_action);
 
                     if (n_gems_tried_or_got >= total_gems) {
+                        if(verbose)
                         System.out.println("Todas las gemas intentadas.");
                         pf.secure_mode = false;
                         last_state = actual;
@@ -256,7 +258,7 @@ public class Agent extends BaseAgent {
                 case JUST_GOT_GEM:
                     local_gem_counter += 1;
                     n_gems_tried_or_got = local_gem_counter;
-                    //if(verbose)
+                    if(verbose)
                     System.out.println("[ACT - JUST_GOT_GEM]: Gema conseguida.");
 
                     if (last_state == States.NEAR_WANTED_GEM || local_gem_counter == NUM_GEMS_FOR_EXIT) { // Esto arregla la siguiente situacion: Coger una gema de camino a otra.
@@ -286,6 +288,7 @@ public class Agent extends BaseAgent {
                         System.out.println("[ACT - SETTING_PATH]: No existe camino a la siguiente gema.");
 
                         if (n_gems_tried_or_got == total_gems){
+                            if(verbose)
                             System.err.println("Nuevo");
                             last_state = actual;
                             pf.secure_mode = false;
@@ -385,7 +388,7 @@ public class Agent extends BaseAgent {
 
                     if (turnsStopped == 4){
 
-                        //if(verbose)
+                        if(verbose)
                         System.err.println("4  turnos parado");
 
                         pf.obstacles.add(nextPos);
@@ -438,7 +441,7 @@ public class Agent extends BaseAgent {
 
 
                 case REACTIVE_MODE:
-
+                    if(verbose)
                     System.err.println("Modo reactivo en posicion " + avatar.getX() + " " + avatar.getY());
                     pf.obstacles.add(nowPos);
 
@@ -447,10 +450,13 @@ public class Agent extends BaseAgent {
                     pf.secure_mode = true;
 
                     for (Observation gem : gems) {
+                        
+                    if(verbose)
                         System.out.println("La siguiente gema es " + gem.getX() + " " + gem.getY());
                         setPath(stateObs, nowPos, gem);
 
                         if (path != null) {
+                            if(verbose)
                             System.out.println("Ya existe camino");
                             next_gem = gem;
                             n_gems_tried_or_got = local_gem_counter;
@@ -473,10 +479,17 @@ public class Agent extends BaseAgent {
                         neighbours = pf.getNeighbours(nowPos);
                     }
 
+                    
+                    if (neighbours.isEmpty()){
+                        return Types.ACTIONS.ACTION_NIL;
+                    }
+                    
+                    
                     Node gem_node = new Node( new Vector2d(next_gem.getX(), next_gem.getY()));
                     double dist = AStar.heuristicEstimatedCost(neighbours.get(0), gem_node);
                     Node nearest_node = neighbours.get(0);
                     for (Node n : neighbours){
+                        if(verbose)
                         System.err.println("Nodo " + n.position.x + " " + n.position.y);
                         if (AStar.heuristicEstimatedCost(n, gem_node) < dist){
 
@@ -485,12 +498,13 @@ public class Agent extends BaseAgent {
                         }
                     }
 
+                    if(verbose)
                     System.err.println("El nodo mas cercano es " + nearest_node.position.x + " " + nearest_node.position.y);
 
                     Types.ACTIONS act = computeNextAction(avatar, nearest_node);
 
                     if (isBoulderAbove(avatar.getX(), avatar.getY(), stateObs)) {
-                        //if(verbose)
+                        if(verbose)
                         System.out.println("[ACT - ]: La siguiente accion implica la muerte");
                         return escape_from_current_position(stateObs).first;
                     }
@@ -544,7 +558,7 @@ public class Agent extends BaseAgent {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs)){
                     // A 20 parece estar bien
-                    h+=0;
+                    h+=20;
                 }
 
                 int x = gem.get(i).getX();
@@ -553,6 +567,11 @@ public class Agent extends BaseAgent {
 
                 if(monsterNearby(x, y, stateObs)){
                         h += 30;
+                }
+                
+                if(monsterNearby(x,y,stateObs,2))
+                {
+                    h+=10;
                 }
  
                 ArrayList<Node> pa = pf.getPath(new Vector2d( lastPosx, lastPosy ),
@@ -823,8 +842,9 @@ public class Agent extends BaseAgent {
 
         //En caso de que no haya seguras, pero tampoco haya ningun mostruo colindando, se hace el sistema clásico
         if(action == Types.ACTIONS.ACTION_NIL)
-            action = Types.ACTIONS.reverseACTION(getLastAction());
+            action = getLastAction();
         
+        if(verbose)
         System.err.println("estamos huyendo:" + action.toString());
         return new Pair<>( action, computeAction( action, actual));
         //this was the line pre-commit
