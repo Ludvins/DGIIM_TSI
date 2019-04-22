@@ -128,7 +128,8 @@ pos   = posicion\_jugador()
 
     }
  }
- \caption{función: \textit{ordered_gems}}
+
+\caption{función: \textit{ordered_gems}}
 \end{algorithm}
 
 La heurística tiene en cuenta dos factores:
