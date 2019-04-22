@@ -30,9 +30,9 @@ public class Agent extends BaseAgent {
     private States actual;
     private States last_state;
     private Observation exit;
-    private int turnsStoped;
+    private int turnsStopped;
 
-    boolean verbose = true;
+    private boolean verbose = false;
   /**
    * Instantiates a new Agent.
    *
@@ -55,15 +55,41 @@ public class Agent extends BaseAgent {
         // Get last known position
         lastPosition = getPlayer(so);
         exit = getExit(so);
-        turnsStoped = 0;
+        turnsStopped = 0;
         gems = this.Gems( so );
         if(verbose)
         {
-        for (Observation gem : gems) {
-            System.out.println("Posicion" + gem.getX() + " " + gem.getY());
-        }
+            for (Observation gem : gems) {
+              System.out.println("Posicion" + gem.getX() + " " + gem.getY());
+          }
         }
         actual = States.NEED_NEW_OBJETIVE;
+
+
+        ArrayList<Observation> enemies = getBatsList(so);
+        enemies.addAll(getScorpionsList(so));
+
+        ArrayList<Observation>[][] grid = getObservationGrid(so);
+
+        for (Observation enemy : enemies){
+            ArrayList<Node> neighbours = pf.getNeighbours(new Node(new Vector2d(enemy.getX(), enemy.getY())));
+
+            boolean isolated = true;
+            for (Node n : neighbours){
+                if (grid[ (int) n.position.x][ (int) n.position.y].get(0).getType() == ObservationType.EMPTY){
+                    isolated = false;
+                    break;
+                }
+            }
+            if (isolated){
+                if(verbose)
+                System.err.println("Posicion aislada " + enemy.getX() + " " +enemy.getY());
+                pf.obstacles.addAll(neighbours);
+            }
+
+        }
+
+
     }
 
     /*******************************************************
@@ -85,10 +111,10 @@ public class Agent extends BaseAgent {
         if (((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY()))
                 && path != null && !path.isEmpty()) {
             path.remove(0);
-            turnsStoped = 0;
+            turnsStopped = 0;
         }
         else {
-            turnsStoped += 1;
+            turnsStopped += 1;
         }
 
         if (local_gem_counter != getNumGems(stateObs)){
@@ -101,7 +127,7 @@ public class Agent extends BaseAgent {
         while (true) {
 
             try{
-                Thread.sleep(0);
+                Thread.sleep(100);
             }
             catch(Exception ignored){}
 
@@ -370,7 +396,7 @@ public class Agent extends BaseAgent {
                         break;
                     }
 
-                    if (turnsStoped == 4){
+                    if (turnsStopped == 4){
                         
                         if(verbose)
                         System.err.println("AYY LMAOOO");
@@ -502,14 +528,18 @@ public class Agent extends BaseAgent {
                 grid[x+1][y+1].get(0).getType(),
         };
 
-        /**
-         * 0 1 2
-         * 3 4 5
-         * 6 7 8
-         *
-         * Nosotros estamos en 1, 3, 7, o 5 y queremos ir a 4.
-         *
-         */
+    /**
+     * 0 1 2 3 4 5 6 7 8
+     *
+     * <p>Nosotros estamos en 1, 3, 7, o 5 y queremos ir a 4.
+     */
+    if (verbose) {
+      System.err.println("MonsterNearby");
+      System.err.println(types[0] + " " + types[1] + " " + types[2]);
+      System.err.println(types[3] + " " + types[4] + " " + types[5]);
+      System.err.println(types[6] + " " + types[7] + " " + types[8]);
+        }
+
         if (isMonster(types[1]) || isMonster(types[3]) || isMonster(types[4]) || isMonster(types[5]) || isMonster(types[7]))
             return true;
 

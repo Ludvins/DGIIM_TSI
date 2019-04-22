@@ -18,6 +18,7 @@ public class PathFinder {
     public StateObservation state;
     public ArrayList<Node> obstacles;
     public boolean VERBOSE = false;
+    public boolean secure_mode = true;
 
     //All types are obstacles except the ones included in this array
     public ArrayList<Integer> obstacleItypes;
@@ -131,11 +132,11 @@ public class PathFinder {
             if (obstacles.contains(n))
                 continue;
 
-            if (grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
+            if (secure_mode && grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
                 neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
             }
             if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i])
-                   && grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7) //Si la casilla tiene una piedra encima entonces no es transitable
+                   && (!secure_mode || grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7)) //Si la casilla tiene una piedra encima entonces no es transitable
             )
             {
 
