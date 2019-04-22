@@ -4,6 +4,10 @@
 #+AUTHOR: Luis Antonio Ortega Andrés @@latex: \\@@ Pedro Bonilla Nadal
 #+OPTIONS: toc:t num:3
 #+LATEX_HEADER: \usepackage[vlined,linesnumbered]{algorithm2e}
+#+latex_class_options: [oneside,openright,titlepage,numbers=noenddot,openany,headinclude,footinclude=true,cleardoublepage=empty,abstractoff,BCOR=5mm,paper=a4,fontsize=12pt,ngerman,american]
+#+latex_header: \hypersetup{colorlinks=true,linkcolor=black}
+\newpage
+
 * Introducción.
 
 En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG_AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía ademas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
