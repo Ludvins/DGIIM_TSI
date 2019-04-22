@@ -31,6 +31,8 @@ public class Agent extends BaseAgent {
     private States last_state;
     private Observation exit;
     private int turnsStopped;
+    private int n_gems_tried_or_got;
+    private int total_gems;
 
     private boolean verbose = false;
   /**
@@ -48,6 +50,7 @@ public class Agent extends BaseAgent {
         tiposObs.add(10); // <- Escorpión
         tiposObs.add(11); // <- Murcielago
 
+        n_gems_tried_or_got = 0;
         // Init pathfinder
         pf = new PathFinder(tiposObs);
         pf.run(so);
@@ -89,6 +92,7 @@ public class Agent extends BaseAgent {
 
         }
 
+        total_gems = this.gems.size();
 
     }
 
@@ -108,13 +112,15 @@ public class Agent extends BaseAgent {
             System.out.println("[ACT]: Posicion actual: " + getPlayer(stateObs).getX() + " " + getPlayer(stateObs).getY());
         PlayerObservation avatar = getPlayer(stateObs);
 
-        if (((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY()))
-                && path != null && !path.isEmpty()) {
+        if (path != null && !path.isEmpty()){
+        if ((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY())){
+
             path.remove(0);
             turnsStopped = 0;
         }
         else {
             turnsStopped += 1;
+        }
         }
 
         if (local_gem_counter != getNumGems(stateObs)){
@@ -190,6 +196,32 @@ public class Agent extends BaseAgent {
                     if(verbose)
                     System.out.println("[ACT - LOOKING_FOR_GEM]: La accion computada es " + ret_action);
 
+                    if (n_gems_tried_or_got >= total_gems) {
+                        System.out.println("Todas las gemas intentadas.");
+                        pf.secure_mode = false;
+                        last_state = actual;
+                        actual = States.REACTIVE_MODE;
+                    }
+                    if (action_implies_death(stateObs, ret_action)) {
+                        if(verbose)
+                        System.out.println("[ACT - LOOKING_FOR_GEM]: La siguiente accion implica la muerte");
+
+                        path.clear();
+                        this.gems.add(next_gem);
+                        last_state = actual;
+                        actual = States.ESCAPING;
+                        break;
+                    }
+                    if (!isSafe(nextPos, stateObs)) {
+                        if(verbose)
+                        System.out.println("[ACT - LOOKING_FOR_GEM]: La siguiente posición no es segura");
+
+                        path.clear();
+                        this.gems.add(next_gem);
+                        last_state = actual;
+                        actual = States.ESCAPING;
+                        break;
+                    }
                     if (monsterNearby(nextPos, stateObs)) {
                         if(verbose)
                         System.out.println("[ACT - LOOKING_FOR_GEM]: HAY UN MONSTRUO CERCAAAAAA");
@@ -201,26 +233,6 @@ public class Agent extends BaseAgent {
                         break;
                     }
 
-                    if (action_implies_death(stateObs, ret_action)) {
-                        if(verbose)
-                        System.out.println("[ACT - LOOKING_FOR_GEM]: La siguiente accion implica la muerte");
-                        
-                        path.clear();
-                        this.gems.add(next_gem);
-                        last_state = actual;
-                        actual = States.ESCAPING;
-                        break;
-                    }
-                    if (!isSafe(nextPos, stateObs)) {
-                        if(verbose)
-                        System.out.println("[ACT - LOOKING_FOR_GEM]: La siguiente posición no es segura");
-                        
-                        path.clear();
-                        this.gems.add(next_gem);
-                        last_state = actual;
-                        actual = States.ESCAPING;
-                        break;
-                    }
                     if (path.size() == 1){
                         if(verbose)
                         System.out.println("[ACT - LOOKING_FOR_GEM]: Al lado de la gema deseada");
@@ -243,8 +255,8 @@ public class Agent extends BaseAgent {
 
                 case JUST_GOT_GEM:
                     local_gem_counter += 1;
-                    
-                    if(verbose)
+                    n_gems_tried_or_got = local_gem_counter;
+                    //if(verbose)
                     System.out.println("[ACT - JUST_GOT_GEM]: Gema conseguida.");
 
                     if (last_state == States.NEAR_WANTED_GEM || local_gem_counter == NUM_GEMS_FOR_EXIT) { // Esto arregla la siguiente situacion: Coger una gema de camino a otra.
@@ -252,6 +264,7 @@ public class Agent extends BaseAgent {
                         actual = States.NEED_NEW_OBJETIVE;
                     }
                     else {
+                        gems.removeIf(g -> g.getX() == nowPos.position.x && g.getY() == nowPos.position.y);
                         last_state = actual;
                         actual = States.LOOKING_FOR_GEM;
                     }
@@ -271,11 +284,19 @@ public class Agent extends BaseAgent {
                         
                         if(verbose)
                         System.out.println("[ACT - SETTING_PATH]: No existe camino a la siguiente gema.");
-                        
+
+                        if (n_gems_tried_or_got == total_gems){
+                            System.err.println("Nuevo");
+                            last_state = actual;
+                            pf.secure_mode = false;
+                            actual = States.REACTIVE_MODE;
+                            break;
+                        }
                         last_state = actual;
                         actual = States.NEED_NEW_OBJETIVE;
                         this.gems.add(next_gem);
                     } else {
+
                         last_state = actual;
                         actual = States.LOOKING_FOR_GEM;
                     }
@@ -291,6 +312,7 @@ public class Agent extends BaseAgent {
                         last_state = actual;
                         actual = States.GOT_ALL_GEMS;
                     } else {
+                        n_gems_tried_or_got += 1;
                         next_gem = this.gems.get(0);
                         this.gems.remove(0);
                         last_state = actual;
@@ -308,12 +330,12 @@ public class Agent extends BaseAgent {
 
                     Types.ACTIONS ret_act = ret.first;
                     nextPos = ret.second;
-                    if (monsterNearby(nextPos, stateObs) || action_implies_death(stateObs, ret_act) || !isSafe(nextPos, stateObs)) {
+                    //if (monsterNearby(nextPos, stateObs) || action_implies_death(stateObs, ret_act) || !isSafe(nextPos, stateObs)) {
                         
-                    if(verbose)
-                        System.out.println("[ACT - Escape]: Nos quedamos en modo escapar");
-                        return ret.first;
-                    }
+                    //if(verbose)
+                    //    System.out.println("[ACT - Escape]: Nos quedamos en modo escapar");
+                    //    return ret.first;
+                    //}
 
                     last_state = actual;
                     actual = States.NEED_NEW_OBJETIVE;
@@ -361,6 +383,17 @@ public class Agent extends BaseAgent {
                     if(verbose)
                     System.out.println("[ACT - GOING_EXIT]: La accion computada es " + ret_action);
 
+                    if (turnsStopped == 4){
+
+                        //if(verbose)
+                        System.err.println("4  turnos parado");
+
+                        pf.obstacles.add(nextPos);
+                        path.clear();
+                        last_state = States.GOING_TO_EXIT;
+                        actual = States.NEED_NEW_OBJETIVE;
+                    }
+
                     if (monsterNearby(nextPos, stateObs)) {
                         
                         if(verbose)
@@ -396,16 +429,6 @@ public class Agent extends BaseAgent {
                         break;
                     }
 
-                    if (turnsStopped == 4){
-                        
-                        if(verbose)
-                        System.err.println("AYY LMAOOO");
-                        
-                        pf.obstacles.add(nextPos);
-                        path.clear();
-                        last_state = States.GOING_TO_EXIT;
-                        actual = States.NEED_NEW_OBJETIVE;
-                    }
                     
                     if(verbose)
                     System.out.println("[ACT - GOING_EXIT]: Acción a devolver: " + ret_action);
@@ -413,9 +436,81 @@ public class Agent extends BaseAgent {
                     lastPosition = avatar;
                     return ret_action;
 
+
+                case REACTIVE_MODE:
+
+                    System.err.println("Modo reactivo en posicion " + avatar.getX() + " " + avatar.getY());
+                    pf.obstacles.add(nowPos);
+
+                    boolean gem_reachable = false;
+
+                    pf.secure_mode = true;
+
+                    for (Observation gem : gems) {
+                        System.out.println("La siguiente gema es " + gem.getX() + " " + gem.getY());
+                        setPath(stateObs, nowPos, gem);
+
+                        if (path != null) {
+                            System.out.println("Ya existe camino");
+                            next_gem = gem;
+                            n_gems_tried_or_got = local_gem_counter;
+                            gems.remove(gem);
+                            actual = States.LOOKING_FOR_GEM;
+                            gem_reachable = true;
+                            break;
+                        }
+                    }
+                    if (gem_reachable)
+                        break;
+
+                    pf.secure_mode = false;
+
+                    ArrayList<Node> neighbours = pf.getNeighbours(nowPos);
+
+                    if (neighbours.isEmpty()){
+                        pf.obstacles.clear();
+                        pf.obstacles.add(nowPos);
+                        neighbours = pf.getNeighbours(nowPos);
+                    }
+
+                    Node gem_node = new Node( new Vector2d(next_gem.getX(), next_gem.getY()));
+                    double dist = AStar.heuristicEstimatedCost(neighbours.get(0), gem_node);
+                    Node nearest_node = neighbours.get(0);
+                    for (Node n : neighbours){
+                        System.err.println("Nodo " + n.position.x + " " + n.position.y);
+                        if (AStar.heuristicEstimatedCost(n, gem_node) < dist){
+
+                                dist = AStar.heuristicEstimatedCost(n, gem_node);
+                                nearest_node = n;
+                        }
+                    }
+
+                    System.err.println("El nodo mas cercano es " + nearest_node.position.x + " " + nearest_node.position.y);
+
+                    Types.ACTIONS act = computeNextAction(avatar, nearest_node);
+
+                    if (isBoulderAbove(avatar.getX(), avatar.getY(), stateObs)) {
+                        //if(verbose)
+                        System.out.println("[ACT - ]: La siguiente accion implica la muerte");
+                        return escape_from_current_position(stateObs).first;
+                    }
+
+                    return act;
+
+
+
             }
 
+
         }
+
+    }
+
+    private void boulderPuzzle(StateObservation so){
+
+
+
+
 
     }
 
@@ -448,7 +543,8 @@ public class Agent extends BaseAgent {
             {
                 int h = 0;
                 if( isBoulderAbove(  gem.get(i).getX(),gem.get(i).getY(),stateObs)){
-                    h+=10;
+                    // A 20 parece estar bien
+                    h+=0;
                 }
 
                 int x = gem.get(i).getX();
