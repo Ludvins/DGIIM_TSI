@@ -13,7 +13,7 @@
 
 * Introducción.
 
-En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG\_AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía ademas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
+En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG\textunderscore AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía ademas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
 
 La memoria se dividirá en 3 partes, una descrición general de la solución, otra del comportamiento reactivo y otra del comportammiento deliberativo.
 
@@ -152,7 +152,7 @@ De este modo nuestro jugador empieza con un orden coherente para intentar recoge
 
 ** Método de pathfinding.
 
-La forma en la que el avatar computa las rutas para llegar a las gemas es utilizando un algoritmo A^*, como el entorno GVGAI ya dispone de un algoritmo A^* programado en él y no pensamos que el objetivo de la práctica sea poner a prueba nuestra capacidad para programar el algoritmo de búsqueda (teniendo en cuenta que fue uno de los trabajos realizados en la asignatura previa, Inteligencia Arficial), hemos decidido copiar la implementación realizada en nuestro paquete y realizar modificaciónes sobre ella.
+La forma en la que el avatar computa las rutas para llegar a las gemas es utilizando un algoritmo A^*, como el entorno GVG\textunderscore AI ya dispone de un algoritmo A^* programado en él y no pensamos que el objetivo de la práctica sea poner a prueba nuestra capacidad para programar el algoritmo de búsqueda (teniendo en cuenta que fue uno de los trabajos realizados en la asignatura previa, Inteligencia Arficial), hemos decidido copiar la implementación realizada en nuestro paquete y realizar modificaciónes sobre ella.
 Modificaciones realizadas:
 
 + En el método de generación de vecinos en ~pathfinder.java~, se han añadido las siguientes consideraciones (siempre que el modo ~secure_mode~ este activado): una casilla bajo una roca *no es transitable*, hemos de tener en cuenta que aunque no sea transitable si es *alcanzable*, una gema bajo una piedra se puede coger desde alrededor, esto también se ha implementado. El resultado que tiene esto en el avatar es que los caminos que coge no intentan pasar por debajo de piedras salvo que la parte reactiva le diga lo contrario. De esta forma se evitan movimientos de piedras innecesarios y que podrían resultar en que el avatar quedara encerrado.
@@ -187,7 +187,7 @@ Ahora se comprueban las casillas 0, 4 y 7, que serán peligrosas si y solo si la
 
 ** La acción implica la muerte.
 
-Este método simula que se realiza la acción que se quiere devolver, utilizando la herramienta que dispone GVG\_AI para ello, este método no es efectivo contra los monstruos ya que su movimiento es aleatorio y en la simulación pueden realizar un movimiento distinto al realizado despues.
+Este método simula que se realiza la acción que se quiere devolver, utilizando la herramienta que dispone GVG\textunderscore AI para ello, este método no es efectivo contra los monstruos ya que su movimiento es aleatorio y en la simulación pueden realizar un movimiento distinto al realizado despues.
 
 ** La acción es segura.
 
