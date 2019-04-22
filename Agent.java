@@ -75,22 +75,31 @@ public class Agent extends BaseAgent {
 
         ArrayList<Observation>[][] grid = getObservationGrid(so);
 
-        for (Observation enemy : enemies){
-            ArrayList<Node> neighbours = pf.getNeighbours(new Node(new Vector2d(enemy.getX(), enemy.getY())));
+        //for (Observation enemy : enemies){
+          //  ArrayList<Node> neighbours = pf.getNeighbours(new Node(new Vector2d(enemy.getX(), enemy.getY())));
 
-            boolean isolated = true;
-            for (Node n : neighbours){
-                if (grid[ (int) n.position.x][ (int) n.position.y].get(0).getType() == ObservationType.EMPTY){
-                    isolated = false;
-                    break;
+            //boolean isolated = true;
+            //for (Node n : neighbours){
+            //    if (grid[ (int) n.position.x][ (int) n.position.y].get(0).getType() == ObservationType.EMPTY){
+                    //isolated = false;
+            //        break;
+        //}
+          //  }
+            //if (isolated){
+              //  if(verbose)
+                //System.err.println("Posicion aislada " + enemy.getX() + " " +enemy.getY());
+                //pf.obstacles.addAll(neighbours);
+            //}
+        //}
+        for (Observation a : getEmptyTilesList(so)){
+            Node node = new Node(new Vector2d(a.getX(), a.getY()));
+            ArrayList<Node> nei = pf.getNeighbours(node);
+            for (Node n : nei){
+                if (!AStar.high_heuristic_nodes.contains(n)) {
+                    //System.err.println("Añado");
+                    AStar.high_heuristic_nodes.add(n);
                 }
             }
-            if (isolated){
-                if(verbose)
-                System.err.println("Posicion aislada " + enemy.getX() + " " +enemy.getY());
-                pf.obstacles.addAll(neighbours);
-            }
-
         }
 
         total_gems = this.gems.size();
@@ -113,15 +122,14 @@ public class Agent extends BaseAgent {
             System.out.println("[ACT]: Posicion actual: " + getPlayer(stateObs).getX() + " " + getPlayer(stateObs).getY());
         PlayerObservation avatar = getPlayer(stateObs);
 
-        if (path != null && !path.isEmpty()){
         if ((avatar.getX() != lastPosition.getX()) || (avatar.getY() != lastPosition.getY())){
-
+            if (path != null && !path.isEmpty()){
             path.remove(0);
             turnsStopped = 0;
+            }
         }
         else {
             turnsStopped += 1;
-        }
         }
 
         if (local_gem_counter != getNumGems(stateObs)){
@@ -395,6 +403,7 @@ public class Agent extends BaseAgent {
                         path.clear();
                         last_state = States.GOING_TO_EXIT;
                         actual = States.NEED_NEW_OBJETIVE;
+                        turnsStopped = 0;
                     }
 
                     if (monsterNearby(nextPos, stateObs)) {
@@ -520,15 +529,6 @@ public class Agent extends BaseAgent {
 
     }
 
-    private void boulderPuzzle(StateObservation so){
-
-
-
-
-
-    }
-
-
     /*******************************************************
      * Gem Listing Methods
      *******************************************************/
@@ -644,16 +644,12 @@ public class Agent extends BaseAgent {
         };
 
     /**
-     * 0 1 2 3 4 5 6 7 8
+     * 0 1 2
+     * 3 4 5
+     * 6 7 8
      *
-     * <p>Nosotros estamos en 1, 3, 7, o 5 y queremos ir a 4.
+     * Nosotros estamos en 1, 3, 7, o 5 y queremos ir a 4.
      */
-    if (verbose) {
-      System.err.println("MonsterNearby");
-      System.err.println(types[0] + " " + types[1] + " " + types[2]);
-      System.err.println(types[3] + " " + types[4] + " " + types[5]);
-      System.err.println(types[6] + " " + types[7] + " " + types[8]);
-        }
 
         if (isMonster(types[1]) || isMonster(types[3]) || isMonster(types[4]) || isMonster(types[5]) || isMonster(types[7]))
             return true;
@@ -724,15 +720,15 @@ public class Agent extends BaseAgent {
             {
                 ObservationType type1 = ObservationType.EMPTY;
                 ObservationType type2 = ObservationType.EMPTY;
-                
+
                 try{
                     type1 = getObservationGrid(so)[x+i-j][y+j].get(0).getType();
-                }catch(ArrayIndexOutOfBoundsException e){ ; }
-                
+                }catch(ArrayIndexOutOfBoundsException ignored){}
+
                 try{
                     type2 = getObservationGrid(so)[x-i+j][y-j].get(0).getType();
                 }catch(ArrayIndexOutOfBoundsException e){ ; }
-                
+
                 if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT ||
                     type2 == ObservationType.SCORPION || type2 == ObservationType.BAT )
                         result = true;

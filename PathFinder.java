@@ -134,6 +134,7 @@ public class PathFinder {
 
             if (secure_mode && grid[x + x_arrNeig[i]][y+y_arrNeig[i]].stream().map(o -> o.itype).anyMatch( e -> e == 6)){
                 neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
+                continue;
             }
             if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i])
                    && (!secure_mode || grid[x + x_arrNeig[i] ][y-1+y_arrNeig[i]].stream().map(o -> o.itype).noneMatch( e -> e == 7)) //Si la casilla tiene una piedra encima entonces no es transitable

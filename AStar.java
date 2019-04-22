@@ -1,5 +1,6 @@
 package practica_busqueda;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
@@ -11,12 +12,14 @@ public class AStar
     public HashMap<Integer, ArrayList<Node>> pathCache;
     public PathFinder pathfinder;
     public boolean visited[][];
+    public static ArrayList<Node> high_heuristic_nodes;
 
     public AStar(PathFinder pathfinder)
     {
         this.pathfinder = pathfinder;
         pathCache = new HashMap<Integer, ArrayList<Node>>();
         visited = new boolean[pathfinder.grid.length][pathfinder.grid[0].length];
+        high_heuristic_nodes = new ArrayList<>();
     }
 
     public void emptyCache()
@@ -32,6 +35,11 @@ public class AStar
         int spin = 0;
         if (curNode.position.x != goalNode.position.x && curNode.position.y != goalNode.position.y)
             spin = 1;
+
+        if (high_heuristic_nodes.contains(curNode)){
+            //System.err.println("HOLA");
+            spin += 20;
+        }
 
 
         double xDiff = Math.abs(curNode.position.x - goalNode.position.x);
