@@ -13,7 +13,7 @@
 
 * Introducción.
 
-En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG\textunderscore AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía ademas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
+En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG\textunderscore AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía además tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
 
 La memoria se dividirá en 3 partes, una descripción general de la solución, otra del comportamiento reactivo y otra del comportamiento deliberativo.
 
@@ -165,7 +165,7 @@ Modificaciones realizadas:
 \newpage
 * Comportamiento Reactivo
 
-El comportamiento reactivo del avatar esta basado en 3 grandes comprobaciones que se realizan en cada iteración.
+El comportamiento reactivo del avatar está basado en 3 grandes comprobaciones que se realizan en cada iteración.
 
 ** Presencia de un monstruo cerca. 
 
@@ -181,13 +181,13 @@ La primera comprobación es que en las casillas 2, 5, I, 6, 8 y 9 no existe un m
 
 Las siguientes comprobaciones se hacen teniendo en cuenta que los monstruos no necesitan realizar giros y que su movimiento se hace antes que el del avatar.
 Miramos que las posiciones 1 y 3 no sean un monstruo, en caso de serlo, estas posiciones suponen un problema solo en las siguientes ocasiones:
-+ La posicion 1 será peligrosa si y solo si las casillas 2 o 5 se encuentran vacias, en caso de estar ocupadas la posición no es peligrosa.
-+ La posicion 3 será peligrosa si y solo si las casillas 2 o 6 se encuentran vacias, en caso de estar ocupadas la posición no es peligrosa.
-Ahora se comprueban las casillas 0, 4 y 7, que serán peligrosas si y solo si las casillas 2, 5, y 6 respectivamente están vacias.
++ La posicion 1 será peligrosa si y solo si las casillas 2 o 5 se encuentran vacías, en caso de estar ocupadas la posición no es peligrosa.
++ La posicion 3 será peligrosa si y solo si las casillas 2 o 6 se encuentran vacías, en caso de estar ocupadas la posición no es peligrosa.
+Ahora se comprueban las casillas 0, 4 y 7, que serán peligrosas si y solo si las casillas 2, 5, y 6 respectivamente están vacías.
 
 ** La acción implica la muerte.
 
-Este método simula que se realiza la acción que se quiere devolver, utilizando la herramienta que dispone GVG\textunderscore AI para ello, este método no es efectivo contra los monstruos ya que su movimiento es aleatorio y en la simulación pueden realizar un movimiento distinto al realizado despues.
+Este método simula que se realiza la acción que se quiere devolver, utilizando la herramienta que dispone GVG\textunderscore AI para ello, este método no es efectivo contra los monstruos ya que su movimiento es aleatorio y en la simulación pueden realizar un movimiento distinto al realizado después.
 
 ** La acción es segura.
 
@@ -195,8 +195,8 @@ Este método se preocupa de comprobar si en la casilla a la que se quiere ir exi
 
 ** Acción de escape.
 
-En caso de que cualquiera de los métodos anteriores devuelva que la accion es peligrosa, el avatar entra en modo escape, donde llamará a ~escape_from~ ~_current_position~, un método encargado de devolver la acción que salvará al avatar. Para ello se cogen todas las acciones posibles que se pueden realizar y se hacen las 3 mismas comprobaciones sobre ellas hasta dar con una posición segura. En caso de no encontrarse, se devolverá la acción contraria a la realizada la ultima vez (con la idea de volver a la posición anterior). 
-** Estado REACTIVE_ MODE
+En caso de que cualquiera de los métodos anteriores devuelva que la acción es peligrosa, el avatar entra en modo escape, donde llamará a ~escape_from~ ~_current_position~, un método encargado de devolver la acción que salvará al avatar. Para ello se cogen todas las acciones posibles que se pueden realizar y se hacen las 3 mismas comprobaciones sobre ellas hasta dar con una posición segura. En caso de no encontrarse, se devolverá la acción contraria a la realizada la última vez (con la idea de volver a la posición anterior). 
+** Estado REACTIVE_ MODE.
 
-La finalidad de este estado es utilizarlo cuando el ~pathfinder~, no sea capaz de devolver un camino. En este estado el avatar coge la posición que mas le acerque a su destino de entre sus vecinos. Intentando no volver atrás salvo que sea necesario.
+La finalidad de este estado es utilizarlo cuando el ~pathfinder~, no sea capaz de devolver un camino. En este estado el avatar coge la posición que más le acerque a su destino de entre sus vecinos. Intentando no volver atrás salvo que sea necesario.
 En la práctica este estado solo se utiliza cuando el avatar se ha quedado encerrado y la única forma de salir es mover ciertas piedras, aunque no asegura que de existir una forma de salir la vaya a encontrar.
