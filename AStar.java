@@ -37,7 +37,6 @@ public class AStar
             spin = 1;
 
         if (high_heuristic_nodes.contains(curNode)){
-            //System.err.println("HOLA");
             spin += 20;
         }
 

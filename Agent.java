@@ -73,30 +73,11 @@ public class Agent extends BaseAgent {
         ArrayList<Observation> enemies = getBatsList(so);
         enemies.addAll(getScorpionsList(so));
 
-        ArrayList<Observation>[][] grid = getObservationGrid(so);
-
-        //for (Observation enemy : enemies){
-          //  ArrayList<Node> neighbours = pf.getNeighbours(new Node(new Vector2d(enemy.getX(), enemy.getY())));
-
-            //boolean isolated = true;
-            //for (Node n : neighbours){
-            //    if (grid[ (int) n.position.x][ (int) n.position.y].get(0).getType() == ObservationType.EMPTY){
-                    //isolated = false;
-            //        break;
-        //}
-          //  }
-            //if (isolated){
-              //  if(verbose)
-                //System.err.println("Posicion aislada " + enemy.getX() + " " +enemy.getY());
-                //pf.obstacles.addAll(neighbours);
-            //}
-        //}
         for (Observation a : getEmptyTilesList(so)){
             Node node = new Node(new Vector2d(a.getX(), a.getY()));
             ArrayList<Node> nei = pf.getNeighbours(node);
             for (Node n : nei){
                 if (!AStar.high_heuristic_nodes.contains(n)) {
-                    //System.err.println("Añado");
                     AStar.high_heuristic_nodes.add(n);
                 }
             }
@@ -141,11 +122,12 @@ public class Agent extends BaseAgent {
 
         while (true) {
 
+            /*
             try{
-                Thread.sleep(00);
+                Thread.sleep(0);
             }
             catch(Exception ignored){}
-
+            */
             if(verbose)
             {
                 System.out.println("[ACT]: Estado actual " + actual);
@@ -289,7 +271,7 @@ public class Agent extends BaseAgent {
                     System.out.println("La gema objetivo es :" + next_gem.getX() + " " + next_gem.getY());
 
                     setPath(stateObs, nowPos, next_gem);
-                    // TODO Que pasa si no existe path a ninguna gema.
+
                     if (path == null || path.isEmpty()){
                         
                         if(verbose)
@@ -338,15 +320,6 @@ public class Agent extends BaseAgent {
                 case ESCAPING:
 
                     Pair<Types.ACTIONS, Node> ret = escape_from_current_position(stateObs);
-
-                    Types.ACTIONS ret_act = ret.first;
-                    nextPos = ret.second;
-                    //if (monsterNearby(nextPos, stateObs) || action_implies_death(stateObs, ret_act) || !isSafe(nextPos, stateObs)) {
-                        
-                    //if(verbose)
-                    //    System.out.println("[ACT - Escape]: Nos quedamos en modo escapar");
-                    //    return ret.first;
-                    //}
 
                     last_state = actual;
                     actual = States.NEED_NEW_OBJETIVE;
@@ -727,7 +700,7 @@ public class Agent extends BaseAgent {
 
                 try{
                     type2 = getObservationGrid(so)[x-i+j][y-j].get(0).getType();
-                }catch(ArrayIndexOutOfBoundsException e){ ; }
+                }catch(ArrayIndexOutOfBoundsException e){ }
 
                 if( type1 == ObservationType.SCORPION || type1 == ObservationType.BAT ||
                     type2 == ObservationType.SCORPION || type2 == ObservationType.BAT )
@@ -736,13 +709,7 @@ public class Agent extends BaseAgent {
         }
         return result;
     }
-    
-    private boolean monsterNearby(Node Pos, StateObservation so, int r){
-        int x = (int) Pos.position.x;
-        int y = (int) Pos.position.y;
-        return monsterNearby(x, y, so, r);
-    }
-      
+
 
     /*************************************************
      * Safety Methods
@@ -816,34 +783,11 @@ public class Agent extends BaseAgent {
         if(verbose)
             System.out.println("[Escape]: El jugador muere de todas formas");
         
-        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
- 
-        
-        /*for( int i = -1; i < 2; ++i)
-        {
-            // Si hay un bicho en una casilla, calcula como llegar a ella y va en dirección contraria
-            if( getObservationGrid(stateObs)[x+i][y].get(0).getType() == ObservationType.BAT || 
-                    getObservationGrid(stateObs)[x+i][y].get(0).getType() == ObservationType.SCORPION )
-            {
-                action = Types.ACTIONS.reverseACTION(computeNextAction(getPlayer(stateObs) , new Node( new Vector2d(x+i, y) ) ));
-                System.err.println("Estamos huyendo");
-            }
-            if( getObservationGrid(stateObs)[x][y+i].get(0).getType() == ObservationType.BAT || 
-                    getObservationGrid(stateObs)[x][y+i].get(0).getType() == ObservationType.SCORPION )
-            {
-                action = Types.ACTIONS.reverseACTION(computeNextAction(getPlayer(stateObs) , new Node( new Vector2d(x, y+i) ) ));
-                System.err.println("Estamos huyendo");
-            }
-        }*/
-
-        //En caso de que no haya seguras, pero tampoco haya ningun mostruo colindando, se hace el sistema clásico
-        if(action == Types.ACTIONS.ACTION_NIL)
-            action = getLastAction();
+        Types.ACTIONS action = getLastAction();
         
         if(verbose)
         System.err.println("estamos huyendo:" + action.toString());
         return new Pair<>( action, computeAction( action, actual));
-        //this was the line pre-commit
         //return new Pair<>(Types.ACTIONS.reverseACTION(getLastAction()), actual);
     }
 
