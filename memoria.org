@@ -15,7 +15,7 @@
 
 En esta práctica se pedía desarrollar un controlador basado en alguna variante de A* dentro del entorno GVG\textunderscore AI que guíe a un avatar a resolver un juego en distintos niveles. El avatar debía ademas tener un comportamiento reactivo adecuado, ya que en el juego existen elementos como enemigos cuyo movimiento no es predecible.
 
-La memoria se dividirá en 3 partes, una descrición general de la solución, otra del comportamiento reactivo y otra del comportammiento deliberativo.
+La memoria se dividirá en 3 partes, una descripción general de la solución, otra del comportamiento reactivo y otra del comportamiento deliberativo.
 
 
 * Descripción general de la solución.
@@ -137,7 +137,7 @@ pos   = posicion\_jugador()
     }
  }
 
-\caption{función: \textit{ordered_gems}}
+\caption{función: \textit{ordered\textunderscore gems}}
 \end{algorithm}
 
 La heurística tiene en cuenta dos factores:
@@ -146,7 +146,7 @@ La heurística tiene en cuenta dos factores:
 
 + Se perjudica a las gemas con bichos cerca de forma radial. Esto implica que se perjudican de manera incremental segun tengan un bicho en un radio de 3, 2 o 1 bloque, utilizando la distancia manhattan para generar estas bolas.
 
-+ Cercania a la posición *pos*. Está se incializa a la posición donde aparece el jugador,y se va actualizando con respecto a cada gema. Esta cercacina se calcula como la distancia del path hallado por el pathfinder. Suponiendo un mapa vacío con solo gemas, nuestro orden se comportaría como una solución *greedy* del *TSP*.
++ Cercania a la posición *pos*. Está se incializa a la posición donde aparece el jugador, y se va actualizando con respecto a cada gema. Esta cercacina se calcula como la distancia del path hallado por el pathfinder. Suponiendo un mapa vacío con solo gemas, nuestro orden se comportaría como una solución *greedy* del *TSP*.
 
 De este modo nuestro jugador empieza con un orden coherente para intentar recoger las gemas. El vector de gemas se recorre en sentido FIFO.
 
