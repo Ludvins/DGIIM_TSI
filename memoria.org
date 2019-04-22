@@ -10,12 +10,13 @@ En esta práctica se pedía desarrollar un controlador basado en alguna variante
 
 La memoria se dividirá en 3 partes, una descrición general de la solución, otra del comportamiento reactivo y otra del comportammiento deliberativo.
 
+
 * Descripción general de la solución.
 
 A grandes rasgos el comportamiento del avatar se basa en lo siguiente.
 
 + Realiza un estudio de las gemas que existen en el mapa (aprovechandose de que el mapa es conocido), el objetivo de esto es elegir el orden en el que se irá a cada una de las gemas detiendo en cuenta su posición y lo seguras que son.
-+ El personaje tiene un comportamiento deliberativo donde según lo visto antes va cogiendo gemas, intentando siempre pasar por posiciones seguras (no presentan un riesgo evidente).
++ El avatar tiene un comportamiento deliberativo donde, según lo visto antes, va cogiendo gemas intentando siempre pasar por posiciones seguras (no presentan un riesgo evidente).
 + En caso de que suceda algo inesperado, por ejemplo, una piedra cayendo sobre el avatar o un enemigo acercandose, dispone de una serie de reglas reactivas, todas basadas en garantizar su seguridad.
 + La implementación del avatar se vaya en una máquina de estados, donde es llevar un control de la situación actual del avatar.
 
@@ -56,7 +57,12 @@ gte --> e : Peligro
 [[file:tryout.png]]
 
 
- El código correspondiente al metodo ~act~ tiene la siguiente estructura. 
+
+
+El código correspondiente al metodo ~act~ tiene la siguiente estructura. 
+\\
+
+
 
 \begin{algorithm}[H]
  \KwData{StateObservation stateObs}
@@ -106,7 +112,8 @@ que orden queremos intentar recoger las gemas. Este orden no será definitivo, p
 de la situación, dejar de intentar obtener una gema para obetener otra. El proceso de selección de las gema es así:
 
 \begin{algorithm}[H]
- \KwData{Datos}
+ \KwData{StateObservation StateObs}
+ \KwResult{ArrayList<Observation> orderedGems}
 gemas = gemas\_disponibles()\\
 pos   = posicion\_jugador()
 
@@ -117,22 +124,22 @@ pos   = posicion\_jugador()
      pos = posicion\_mejor\_gema
 
      gemas.eliminar(mejor\_gema)\\
-     solucion.añadir\_al\_final(mejor\_gema)
+     orderedGems.añadir\_al\_final(mejor\_gema)
 
     }
  }
- \caption{función: \textit{NOMBRE}}
+ \caption{función: \textit{ordered_gems}}
 \end{algorithm}
 
 La heurística tiene en cuenta dos factores:
 
-+ Se beneficia a las gemas que no tienen una roca encima, pues no varían la conectividad de los nodos del mapa permitiendo así explotar primero las gemas disponibles en el estado actual, para explotar luego las que surgen de variaciones del mapa.
++ Se beneficia a las gemas que no tengan una roca encima, pues no varían la conectividad de los nodos del mapa permitiendo así explotar primero las gemas disponibles en el estado actual, para explotar luego las que pasen a ser accesibles tras de variaciones del mapa.
 
 + Se perjudica a las gemas con bichos cerca de forma radial. Esto implica que se perjudican de manera incremental segun tengan un bicho en un radio de 3, 2 o 1 bloque, utilizando la distancia manhattan para generar estas bolas.
 
-+ Cercania a la posicón *pos*. Está se incializa a la posición donde aparece el jugador,y se va actualizando con respecto a cada gema. Esta cercacina se calcula como la distancia del path hallado por el pathfinder. Suponiendo un mapa vacío con solo gemas, nuestro orden se comportaría como una solución *greedy* del *TSP*.
++ Cercania a la posición *pos*. Está se incializa a la posición donde aparece el jugador,y se va actualizando con respecto a cada gema. Esta cercacina se calcula como la distancia del path hallado por el pathfinder. Suponiendo un mapa vacío con solo gemas, nuestro orden se comportaría como una solución *greedy* del *TSP*.
 
-De este modo nuestro jugador empieza con un orden coherente para intentar recoger las gemas.
+De este modo nuestro jugador empieza con un orden coherente para intentar recoger las gemas. El vector de gemas se recorre en sentido FIFO.
 
 ** Método de pathfinding.
 
